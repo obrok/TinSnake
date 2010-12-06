@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 public class ShowMap extends Activity {
 
+	private Bitmap bitmap;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -24,9 +26,9 @@ public class ShowMap extends Activity {
 
 		((TextView) this.findViewById(R.id.showDebug)).setText(mapName);
 
-		Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory()
+		bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory()
 				.getAbsolutePath()
-				+ File.separator + "mapsfolder" + File.separator + mapName + File.separator + mapName + ".jpg");
+				+ File.separator + "mapsfolder" + File.separator + mapName + File.separator + mapName + ".jpg");		
 
 		((ImageView) this.findViewById(R.id.showMap)).setImageBitmap(bitmap);
 	}

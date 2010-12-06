@@ -1,5 +1,6 @@
 package pl.edu.agh.tinsnake;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import pl.edu.agh.tinsnake.util.OutputStreamUser;
+import pl.edu.agh.tinsnake.util.CloseableUser;
 import pl.edu.agh.tinsnake.util.StreamUtil;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -119,20 +120,18 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			dir.mkdirs();
 
 			File file = new File(dir.getPath() + File.separator + name + ".jpg");
-			StreamUtil.safelyAcccess(new FileOutputStream(file), new OutputStreamUser() {				
+			StreamUtil.safelyAcccess(new FileOutputStream(file), new CloseableUser() {
 				@Override
-				public void performAction(OutputStream stream) {
-					bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream);					
+				public void performAction(Closeable stream) throws IOException {
+					bitmap.compress(Bitmap.CompressFormat.JPEG, 90, (OutputStream)stream);
 				}
 			});
 			
 			file = new File(dir.getPath() + File.separator + name + ".txt");
-			StreamUtil.safelyAcccess(new FileOutputStream(file), new OutputStreamUser() {				
+			StreamUtil.safelyAcccess(new OutputStreamWriter(new FileOutputStream(file)), new CloseableUser() {
 				@Override
-				public void performAction(OutputStream stream) throws IOException{
-					Writer writer = new OutputStreamWriter(stream);
-					writer.write(coordinates.toString());
-					writer.flush();
+				public void performAction(Closeable stream) throws IOException {
+					((Writer)stream).write(coordinates.toString());					
 				}
 			});
 		} catch (Exception e) {
