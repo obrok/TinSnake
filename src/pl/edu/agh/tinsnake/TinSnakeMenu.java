@@ -30,7 +30,6 @@ public class TinSnakeMenu extends Activity implements OnClickListener {
 		mapNameSpinner = (Spinner) findViewById(R.id.chooseMapSpinner);
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_spinner_item, dir.list());
-
 		mapNameSpinner.setAdapter(adapter);
 	}
 

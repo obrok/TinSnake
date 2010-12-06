@@ -2,10 +2,16 @@ package pl.edu.agh.tinsnake;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import pl.edu.agh.tinsnake.util.OutputStreamUser;
+import pl.edu.agh.tinsnake.util.StreamUtil;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -92,6 +98,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	}
 
 	private EditText input;
+
 	private void showInputDialog() {
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
@@ -112,9 +119,22 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			dir.mkdirs();
 
 			File file = new File(dir.getPath() + File.separator + name + ".jpg");
-
-			FileOutputStream out = new FileOutputStream(file);
-			bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+			StreamUtil.safelyAcccess(new FileOutputStream(file), new OutputStreamUser() {				
+				@Override
+				public void performAction(OutputStream stream) {
+					bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream);					
+				}
+			});
+			
+			file = new File(dir.getPath() + File.separator + name + ".txt");
+			StreamUtil.safelyAcccess(new FileOutputStream(file), new OutputStreamUser() {				
+				@Override
+				public void performAction(OutputStream stream) throws IOException{
+					Writer writer = new OutputStreamWriter(stream);
+					writer.write(coordinates.toString());
+					writer.flush();
+				}
+			});
 		} catch (Exception e) {
 			((TextView) this.findViewById(R.id.prepareDebug)).setText(e
 					.getClass().getCanonicalName()
