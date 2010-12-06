@@ -108,7 +108,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		try {
 			File dir = new File(Environment.getExternalStorageDirectory()
 					.getAbsolutePath()
-					+ File.separator + "mapsfolder");
+					+ File.separator + "mapsfolder" + File.separator + name);
 			dir.mkdirs();
 
 			File file = new File(dir.getPath() + File.separator + name + ".jpg");
