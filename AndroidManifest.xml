@@ -14,9 +14,13 @@
         <activity android:name=".PrepareMap" />
         <activity android:name=".ShowMap" />
 
-    </application>
+</application>
     <uses-sdk android:minSdkVersion="7" />
 
 
 <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+
+
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+
 </manifest> 

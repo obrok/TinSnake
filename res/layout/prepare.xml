@@ -6,7 +6,7 @@
 		android:layout_height="wrap_content" />
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:id="@+id/prepareButtons" android:orientation="vertical">
+		android:id="@+id/prepareButtons" android:orientation="horizontal">
 		<Button android:id="@+id/zoomOutButton" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:text="Zoom out" />
 		<Button android:id="@+id/saveButton" android:layout_width="wrap_content"
