@@ -5,9 +5,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -126,12 +125,12 @@ public class PrepareMap extends Activity implements OnTouchListener,
 					bitmap.compress(Bitmap.CompressFormat.JPEG, 90, (OutputStream)stream);
 				}
 			});
-			
+
 			file = new File(dir.getPath() + File.separator + name + ".txt");
-			StreamUtil.safelyAcccess(new OutputStreamWriter(new FileOutputStream(file)), new CloseableUser() {
+			StreamUtil.safelyAcccess(new ObjectOutputStream(new FileOutputStream(file)), new CloseableUser() {
 				@Override
 				public void performAction(Closeable stream) throws IOException {
-					((Writer)stream).write(coordinates.toString());					
+					((ObjectOutputStream)stream).writeObject(coordinates);					
 				}
 			});
 		} catch (Exception e) {

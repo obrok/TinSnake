@@ -1,12 +1,18 @@
 package pl.edu.agh.tinsnake;
 
+import java.io.Serializable;
+
 /***
  * Represents the coordinates of a squarish slice of the map
  * 
  * @author obrok
  * 
  */
-public class EarthCoordinates {
+public class EarthCoordinates implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/***
 	 * Creates a slice approximately centered on lat and lng
 	 * 
@@ -17,10 +23,6 @@ public class EarthCoordinates {
 	private int size;
 	private int zoom = 1;
 
-	private EarthCoordinates(){
-		super();
-	}
-	
 	public EarthCoordinates(double lat, double lng, int size) {
 		super();
 		this.lat = lat;
@@ -48,20 +50,5 @@ public class EarthCoordinates {
 				.format(
 						"http://tah.openstreetmap.org/MapOf/?lat=%s&long=%s&z=%d&w=%d&h=%d&format=jpeg",
 						lattitude, longitude, zoom, size, size);
-	}
-	
-	@Override
-	public String toString(){
-		return String.format("%f:%f:%d:%d", lat, lng, size, zoom);
-	}
-	
-	public static EarthCoordinates parse(String string){
-		EarthCoordinates result = new EarthCoordinates();
-		String[] parts = string.split(":");
-		result.lat = Double.parseDouble(parts[0]);
-		result.lng = Double.parseDouble(parts[1]);
-		result.size = Integer.parseInt(parts[2]);
-		result.zoom = Integer.parseInt(parts[3]);
-		return result;
 	}
 }
