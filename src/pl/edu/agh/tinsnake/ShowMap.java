@@ -51,7 +51,7 @@ public class ShowMap extends Activity {
 					try {
 						coordinates = (EarthCoordinates)((ObjectInputStream)stream).readObject();
 					} catch (ClassNotFoundException e) {
-						coordinates = new EarthCoordinates(0, 0, 0);
+						coordinates = new EarthCoordinates(0, 0, 0, 1);
 					}
 				}
 			});

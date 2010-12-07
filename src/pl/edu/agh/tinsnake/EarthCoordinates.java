@@ -21,13 +21,14 @@ public class EarthCoordinates implements Serializable{
 	 */
 	private double lat, lng;
 	private int size;
-	private int zoom = 1;
+	private int zoom;
 
-	public EarthCoordinates(double lat, double lng, int size) {
+	public EarthCoordinates(double lat, double lng, int size, int zoom) {
 		super();
 		this.lat = lat;
 		this.lng = lng;
 		this.size = size;
+		this.zoom = zoom;
 	}
 
 	public void zoomIn(double x, double y) {

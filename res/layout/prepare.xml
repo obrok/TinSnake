@@ -4,6 +4,13 @@
 	android:id="@+id/prepareMain" android:orientation="vertical">
 	<ImageView android:id="@+id/map" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" />
+
+	<EditText android:id="@+id/searchLocationEditText"
+		android:layout_width="fill_parent" android:layout_height="wrap_content" />
+	<Button android:id="@+id/searchLocationButton"
+		android:layout_width="wrap_content" android:layout_height="wrap_content"
+		android:text="Search" />
+
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="wrap_content" android:layout_height="wrap_content"
 		android:id="@+id/prepareButtons" android:orientation="horizontal">
@@ -12,6 +19,9 @@
 		<Button android:id="@+id/saveButton" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:text="Save" />
 	</LinearLayout>
+
+
+
 	<TextView android:id="@+id/prepareDebug" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:text="Perpetrator" />
 </LinearLayout>
