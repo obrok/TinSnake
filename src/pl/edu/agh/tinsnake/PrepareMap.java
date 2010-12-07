@@ -16,8 +16,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 import pl.edu.agh.tinsnake.util.CloseableUser;
 import pl.edu.agh.tinsnake.util.StreamUtil;
@@ -28,6 +26,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,6 +39,9 @@ import android.widget.TextView;
 
 public class PrepareMap extends Activity implements OnTouchListener,
 		OnClickListener, android.content.DialogInterface.OnClickListener {
+	private static final int MAP_NAME_DIALOG = 0;
+	private static final int SEARCH_LOCATION_DIALOG = 1;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -45,20 +49,21 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		setContentView(R.layout.prepare);
 
 		coordinates = new EarthCoordinates(0, 0, this.getWindowManager()
-				.getDefaultDisplay().getWidth() / 2, 1);
+				.getDefaultDisplay().getWidth(), 1);
 		this.findViewById(R.id.map).setClickable(true);
 		this.findViewById(R.id.map).setOnTouchListener(this);
 		this.findViewById(R.id.map).setOnClickListener(this);
 		this.findViewById(R.id.zoomOutButton).setOnClickListener(this);
 		this.findViewById(R.id.saveButton).setOnClickListener(this);
-		this.findViewById(R.id.searchLocationButton).setOnClickListener(this);
 		refreshMap();
 	}
 
 	private EarthCoordinates coordinates;
 	private float lastX, lastY;
 	private Bitmap bitmap;
-
+	
+	private int currentDialog;
+	
 	private void refreshMap() {
 		HttpURLConnection conn = null;
 
@@ -84,37 +89,11 @@ public class PrepareMap extends Activity implements OnTouchListener,
 
 		((ImageView) this.findViewById(R.id.map)).setImageBitmap(bitmap);
 	}
-
-	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		lastX = event.getX();
-		lastY = event.getY();
-		((TextView) this.findViewById(R.id.prepareDebug)).setText(event.getX()
-				+ "\n" + event.getY());
-		return false;
-	}
-
-	@Override
-	public void onClick(View v) {
-		if (v.getId() == R.id.map) {
-			coordinates.zoomIn(lastX, lastY);
-			refreshMap();
-		} else if (v.getId() == R.id.zoomOutButton) {
-			coordinates.zoomOut();
-			refreshMap();
-		} else if (v.getId() == R.id.saveButton) {
-			showInputDialog();
-		} else if (v.getId() == R.id.searchLocationButton){
-			searchLocation();
-			refreshMap();
-		}
-	}
-
-	private void searchLocation() {
+	
+	private void searchLocation(String location) {
 		HttpURLConnection conn = null;
 
 		try {
-			String location = ((EditText) this.findViewById(R.id.searchLocationEditText)).getText().toString();
 			((TextView) this.findViewById(R.id.prepareDebug)).append(location);
 			URL url = new URL(String.format("http://nominatim.openstreetmap.org/search?q=%s&format=xml", location));
 			
@@ -143,7 +122,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			String lon = map.getNamedItem("lon").getNodeValue().toString();
 			
 			coordinates = new EarthCoordinates(Double.parseDouble(lat), Double.parseDouble(lon), this.getWindowManager()
-					.getDefaultDisplay().getWidth() / 2, 10);
+					.getDefaultDisplay().getWidth(), 10);
 		} catch (Exception e) {
 			((TextView) this.findViewById(R.id.prepareDebug)).append(e
 					.getClass().getCanonicalName() + " " + e.getMessage());
@@ -156,12 +135,54 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		}
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.search_menu, menu);
+	    return true;
+	};
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	    case R.id.searchLocationMenuItem:
+	    	showInputDialog("Input location", SEARCH_LOCATION_DIALOG);
+	        return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    }
+	}
+	
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		lastX = event.getX();
+		lastY = event.getY();
+		((TextView) this.findViewById(R.id.prepareDebug)).setText(event.getX()
+				+ "\n" + event.getY());
+		return false;
+	}
+
+	@Override
+	public void onClick(View v) {
+		if (v.getId() == R.id.map) {
+			coordinates.zoomIn(lastX, lastY);
+			refreshMap();
+		} else if (v.getId() == R.id.zoomOutButton) {
+			coordinates.zoomOut();
+			refreshMap();
+		} else if (v.getId() == R.id.saveButton) {
+			showInputDialog("Input map name", MAP_NAME_DIALOG);
+		}
+	}
+
 	private EditText input;
 
-	private void showInputDialog() {
+	private void showInputDialog(String title, int currentDialog) {
+		this.currentDialog = currentDialog;
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-		alert.setTitle("Input map name");
+		alert.setTitle(title);
 
 		// Set an EditText view to get user input
 		input = new EditText(this);
@@ -201,6 +222,17 @@ public class PrepareMap extends Activity implements OnTouchListener,
 
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
-		saveMap(input.getText().toString());
+		switch (currentDialog) {
+		case MAP_NAME_DIALOG:
+			saveMap(input.getText().toString());
+			break;
+		case SEARCH_LOCATION_DIALOG:
+			searchLocation(input.getText().toString());
+			refreshMap();
+			break;
+		default:
+			break;
+		}
+			
 	}
 }
