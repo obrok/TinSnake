@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:title="Search" android:id="@+id/searchLocationMenuItem"/>
+    <item android:title="Save" android:id="@+id/saveMapMenuItem"/>
+    <item android:title="Zoom in" android:id="@+id/zoomInMenuItem"/>
+    <item android:title="Zoom out" android:id="@+id/zoomOutMenuItem"/>
 </menu>

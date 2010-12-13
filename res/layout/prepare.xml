@@ -2,18 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="wrap_content" android:layout_height="wrap_content"
 	android:id="@+id/prepareMain" android:orientation="vertical">
-	<ImageView android:id="@+id/map" android:layout_width="wrap_content"
+	<pl.edu.agh.tinsnake.util.MapWebView android:id="@+id/map" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" />
-
-	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-		android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:id="@+id/prepareButtons" android:orientation="horizontal">
-		<Button android:id="@+id/zoomOutButton" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:text="Zoom out" />
-		<Button android:id="@+id/saveButton" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:text="Save" />
-	</LinearLayout>
-
 
 
 	<TextView android:id="@+id/prepareDebug" android:layout_width="wrap_content"
