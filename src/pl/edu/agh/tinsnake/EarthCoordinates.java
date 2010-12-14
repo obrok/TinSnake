@@ -68,6 +68,16 @@ public class EarthCoordinates implements Serializable{
 		lat += vertSize * deltaY;
 	}
 	
+	public void zoomIn(double x, double y){
+		double horSize = 360 / Math.pow(2, zoom - 1);
+		double vertSize = 171 / Math.pow(2, zoom - 1);
+		
+		zoom += 1;
+		
+		lng += (x / size - 0.5) * horSize;
+		lat += (0.5 - y / size) * vertSize;
+	}
+	
 	public void zoomIn(){
 		zoom += 1;
 	}
@@ -76,12 +86,12 @@ public class EarthCoordinates implements Serializable{
 		zoom -= 1;
 	}
 
-	public String toOSMString() {
+	public String toOSMString(int multiplier) {
 		String lattitude = String.format("%f", lat).replace(',', '.');
 		String longitude = String.format("%f", lng).replace(',', '.');
 		return String
 				.format(
 						"http://tah.openstreetmap.org/MapOf/?lat=%s&long=%s&z=%d&w=%d&h=%d&format=jpeg",
-						lattitude, longitude, zoom, size * 3, size * 3);
+						lattitude, longitude, zoom, size * multiplier, size * multiplier);
 	}
 }

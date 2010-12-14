@@ -57,7 +57,7 @@ public class ShowMap extends Activity {
 			wv.setCoordinates(coordinates);
 			
 			((TextView) this.findViewById(R.id.showDebug)).setText(coordinates
-					.toOSMString());
+					.toOSMString(1));
 		} catch (Exception e) {
 			((TextView) this.findViewById(R.id.showDebug)).setText(e.getClass()
 					.getCanonicalName()
