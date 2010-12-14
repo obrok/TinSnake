@@ -32,20 +32,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class PrepareMap extends Activity implements OnTouchListener,
-OnClickListener, android.content.DialogInterface.OnClickListener {
+public class PrepareMap extends Activity implements OnTouchListener, android.content.DialogInterface.OnClickListener {
 	private static final int MAP_NAME_DIALOG = 0;
 	private static final int SEARCH_LOCATION_DIALOG = 1;
 	
 	private EarthCoordinates coordinates;
-	private float lastX, lastY;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -57,7 +54,6 @@ OnClickListener, android.content.DialogInterface.OnClickListener {
 				.getDefaultDisplay().getWidth(), 2);
 		this.findViewById(R.id.map).setClickable(true);
 		this.findViewById(R.id.map).setOnTouchListener(this);
-		this.findViewById(R.id.map).setOnClickListener(this);
 		
 		refreshMap();
 	}
@@ -235,21 +231,36 @@ OnClickListener, android.content.DialogInterface.OnClickListener {
 		}
 	}
 	
+	float scrollStartX, scrollStartY;
+	
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		lastX = event.getX();
-		lastY = event.getY();
-		((TextView) this.findViewById(R.id.prepareDebug)).setText(event.getX()
-				+ "\n" + event.getY());
-		return false;
-	}
-
-	@Override
-	public void onClick(View v) {
-		if (v.getId() == R.id.map) {
-			coordinates.zoomIn(lastX, lastY);
+		
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_DOWN:
+			scrollStartX = event.getX();
+			scrollStartY = event.getY();
+			break;
+			
+		case MotionEvent.ACTION_UP:
+			
+			float deltaX = scrollStartX - event.getX();
+			float deltaY = event.getY() - scrollStartY;
+			
+			coordinates.moveCenter(deltaX, deltaY);
+			
+			if (Math.abs(deltaX)+Math.abs(deltaY) < 10){
+				coordinates.zoomIn();
+			}
 			refreshMap();
+			
+			break;
+
+		default:
+			break;
 		}
+		
+		return false;
 	}
 
 	@Override

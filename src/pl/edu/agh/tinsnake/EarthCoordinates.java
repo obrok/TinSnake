@@ -50,19 +50,12 @@ public class EarthCoordinates implements Serializable{
 		this.zoom = zoom;
 	}
 
-	public void moveCenter(double x, double y) {
-		
-		int centerX = (int) (1.5*size);
-		int centerY = (int) (1.5*size);
-		
-		int currentX = (int) ((int) x + 0.5*size);
-		int currentY = (int) ((int) y + 240);
-		
-		deltaX = (double)(currentX - centerX) / ((double)(size * 3));
-		deltaY = (double)(currentY - centerY) / ((double)(size * 3));
+	public void moveCenter(float deltaX, float deltaY) {
+		deltaX /= size;
+		deltaY /= size;
 		
 		double horSize = 360 / Math.pow(2, zoom - 2);
-		double vertSize = 180 / Math.pow(2, zoom - 2);
+		double vertSize = 171 / Math.pow(2, zoom - 2);
 		
 		lng += horSize * deltaX;
 		lat += vertSize * deltaY;
