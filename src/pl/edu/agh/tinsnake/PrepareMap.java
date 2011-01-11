@@ -38,10 +38,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class PrepareMap extends Activity implements OnTouchListener, android.content.DialogInterface.OnClickListener {
+public class PrepareMap extends Activity implements OnTouchListener,
+		android.content.DialogInterface.OnClickListener {
 	private static final int MAP_NAME_DIALOG = 0;
 	private static final int SEARCH_LOCATION_DIALOG = 1;
-	
+
 	private EarthCoordinates coordinates;
 
 	/** Called when the activity is first created. */
@@ -54,7 +55,7 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 				.getDefaultDisplay().getWidth(), 2);
 		this.findViewById(R.id.map).setClickable(true);
 		this.findViewById(R.id.map).setOnTouchListener(this);
-		
+
 		refreshMap();
 	}
 
@@ -64,7 +65,7 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 
 	private void refreshMap() {
 		try {
-			bitmap = downloadBitmap(1);
+			bitmap = downloadBitmap(coordinates.toOSMString());
 		} catch (Exception e) {
 			((TextView) this.findViewById(R.id.prepareDebug)).append(e
 					.getClass().getCanonicalName());
@@ -79,11 +80,12 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 		((ImageView) this.findViewById(R.id.map)).setImageBitmap(bitmap);
 	}
 
-	private Bitmap downloadBitmap(int multiplier) throws MalformedURLException, IOException {
+	private Bitmap downloadBitmap(String stringUrl)
+			throws MalformedURLException, IOException {
 		HttpURLConnection conn;
-		URL url = new URL(coordinates.toOSMString(multiplier));
-		((TextView) this.findViewById(R.id.prepareDebug)).append(url
-				.toString());
+		URL url = new URL(stringUrl);
+		((TextView) this.findViewById(R.id.prepareDebug))
+				.append(url.toString());
 		conn = (HttpURLConnection) url.openConnection();
 		conn.setDoInput(true);
 		conn.connect();
@@ -106,7 +108,7 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 			connection = (HttpURLConnection) url.openConnection();
 			connection.setDoInput(true);
 			connection.connect();
-			
+
 			DocumentBuilder db = DocumentBuilderFactory.newInstance()
 					.newDocumentBuilder();
 
@@ -152,7 +154,7 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		
+
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.searchLocationMenuItem:
@@ -161,16 +163,18 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 		case R.id.saveMapMenuItem:
 			showInputDialog("Input map name", MAP_NAME_DIALOG);
 			return true;
-		
+
 		case R.id.zoomInMenuItem:
-			coordinates.zoomIn();			
+			coordinates.zoomIn();
 			refreshMap();
-			return true;		
+			return true;
 		case R.id.zoomOutMenuItem:
 			coordinates.zoomOut();
-			
-			Toast.makeText(getApplicationContext(), coordinates.getLat() + " " + coordinates.getLon(), Toast.LENGTH_SHORT).show();
-			
+
+			Toast.makeText(getApplicationContext(),
+					coordinates.getLat() + " " + coordinates.getLon(),
+					Toast.LENGTH_SHORT).show();
+
 			refreshMap();
 			return true;
 		default:
@@ -194,7 +198,7 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 	}
 
 	private void saveMap(String name) {
-		try {		
+		try {
 			File dir = new File(Environment.getExternalStorageDirectory()
 					.getAbsolutePath()
 					+ File.separator + "mapsfolder" + File.separator + name);
@@ -206,7 +210,8 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 						@Override
 						public void performAction(Closeable stream)
 								throws IOException {
-							Bitmap toSave = downloadBitmap(3);
+							Bitmap toSave = downloadBitmap(coordinates
+									.toBoundingBox().toOSMString(1000));
 							toSave.compress(Bitmap.CompressFormat.JPEG, 90,
 									(OutputStream) stream);
 						}
@@ -217,7 +222,8 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 					new FileOutputStream(file)), new CloseableUser() {
 				@Override
 				public void performAction(Closeable stream) throws IOException {
-					((ObjectOutputStream) stream).writeObject(coordinates);
+					((ObjectOutputStream) stream).writeObject(coordinates
+							.toBoundingBox());
 				}
 			});
 		} catch (Exception e) {
@@ -226,36 +232,36 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 					+ " " + e.getMessage());
 		}
 	}
-	
+
 	float scrollStartX, scrollStartY;
-	
+
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		
+
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			scrollStartX = event.getX();
 			scrollStartY = event.getY();
 			break;
-			
+
 		case MotionEvent.ACTION_UP:
-			
+
 			float deltaX = scrollStartX - event.getX();
 			float deltaY = event.getY() - scrollStartY;
-			
+
 			coordinates.moveCenter(deltaX, deltaY);
-			
-			if (Math.abs(deltaX)+Math.abs(deltaY) < 10){
+
+			if (Math.abs(deltaX) + Math.abs(deltaY) < 10) {
 				coordinates.zoomIn(event.getX(), event.getY());
 			}
 			refreshMap();
-			
+
 			break;
 
 		default:
 			break;
 		}
-		
+
 		return false;
 	}
 

@@ -20,7 +20,7 @@ import android.os.Environment;
 import android.widget.Toast;
 
 public class ShowMap extends Activity implements LocationListener {
-	private EarthCoordinates coordinates;
+	private BoundingBox boundingBox;
 	private MapWebView webView;
 	
 	/** Called when the activity is first created. */
@@ -56,15 +56,15 @@ public class ShowMap extends Activity implements LocationListener {
 				@Override
 				public void performAction(Closeable stream) throws IOException {
 					try {
-						coordinates = (EarthCoordinates) ((ObjectInputStream) stream)
+						boundingBox = (BoundingBox) ((ObjectInputStream) stream)
 								.readObject();
 					} catch (ClassNotFoundException e) {
-						coordinates = new EarthCoordinates(0, 0, 0, 1);
+						boundingBox = new BoundingBox(0, 1, 0, 1);
 					}
 				}
 			});
 
-			webView.setCoordinates(coordinates);
+			webView.setBoundingBox(boundingBox);
 		} catch (Exception e) {
 			Toast.makeText(this.getApplicationContext(), e.getClass()
 					.getCanonicalName()

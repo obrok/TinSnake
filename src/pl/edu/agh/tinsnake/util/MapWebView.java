@@ -1,6 +1,6 @@
 package pl.edu.agh.tinsnake.util;
 
-import pl.edu.agh.tinsnake.EarthCoordinates;
+import pl.edu.agh.tinsnake.BoundingBox;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -10,24 +10,17 @@ public class MapWebView extends WebView {
 
 	private int center;
 
-	private EarthCoordinates coordinates;
+	private BoundingBox boundingBox;
+
+	public BoundingBox getBoundingBox() {
+		return boundingBox;
+	}
+
+	public void setBoundingBox(BoundingBox boundingBox) {
+		this.boundingBox = boundingBox;
+	}
 
 	private String mapUrl;
-
-	public void setCoordinates(EarthCoordinates coordinates) {
-		this.coordinates = coordinates;
-		scrollToCenter();
-	}
-
-	public EarthCoordinates getCoordinates() {
-
-		if (coordinates == null) {
-			coordinates = new EarthCoordinates(0, 0, 320, 2);
-		}
-
-		coordinates.moveCenter(getScrollX(), getScrollY());
-		return coordinates;
-	}
 
 	public MapWebView(Context context) {
 		super(context);
