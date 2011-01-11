@@ -163,13 +163,9 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 			return true;
 		
 		case R.id.zoomInMenuItem:
-			coordinates.zoomIn();
-			
-			Toast.makeText(getApplicationContext(), "deltaX: " + coordinates.deltaX + " lon: " + coordinates.getLon(), Toast.LENGTH_LONG).show();
-			
+			coordinates.zoomIn();			
 			refreshMap();
-			return true;
-		
+			return true;		
 		case R.id.zoomOutMenuItem:
 			coordinates.zoomOut();
 			
@@ -250,7 +246,7 @@ public class PrepareMap extends Activity implements OnTouchListener, android.con
 			coordinates.moveCenter(deltaX, deltaY);
 			
 			if (Math.abs(deltaX)+Math.abs(deltaY) < 10){
-				coordinates.zoomIn();
+				coordinates.zoomIn(event.getX(), event.getY());
 			}
 			refreshMap();
 			

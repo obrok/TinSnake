@@ -23,9 +23,6 @@ public class EarthCoordinates implements Serializable{
 	private int size;
 	private int zoom;
 	
-	public double deltaX;
-	public double deltaY;
-	
 	public double getLat(){
 		return lat;
 	}
@@ -61,7 +58,7 @@ public class EarthCoordinates implements Serializable{
 		lat += vertSize * deltaY;
 	}
 	
-	public void zoomIn(double x, double y){
+	public void zoomIn(float x, float y){
 		double horSize = 360 / Math.pow(2, zoom - 1);
 		double vertSize = 171 / Math.pow(2, zoom - 1);
 		
@@ -84,6 +81,7 @@ public class EarthCoordinates implements Serializable{
 		String longitude = String.format("%f", lng).replace(',', '.');
 		return String
 				.format(
+						//"http://tile.openstreetmap.org/cgi-bin/export?bbox=0.0,51.0,1.0,52.0&scale=280000&format=jpeg"
 						"http://tah.openstreetmap.org/MapOf/?lat=%s&long=%s&z=%d&w=%d&h=%d&format=jpeg",
 						lattitude, longitude, zoom, size * multiplier, size * multiplier);
 	}
