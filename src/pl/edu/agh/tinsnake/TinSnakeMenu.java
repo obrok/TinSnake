@@ -45,7 +45,7 @@ public class TinSnakeMenu extends Activity implements OnClickListener {
 			builder.setTitle("Pick a map");
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 			    public void onClick(DialogInterface dialog, int item) {
-			        Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
+			        //Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
 			        String chosen = items[item].toString();
 			        
 			        Intent i = new Intent(getBaseContext(), ShowMap.class);

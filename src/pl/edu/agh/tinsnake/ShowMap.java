@@ -10,25 +10,35 @@ import pl.edu.agh.tinsnake.util.CloseableUser;
 import pl.edu.agh.tinsnake.util.MapWebView;
 import pl.edu.agh.tinsnake.util.StreamUtil;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.widget.TextView;
+import android.widget.Toast;
 
-public class ShowMap extends Activity {
+public class ShowMap extends Activity implements LocationListener {
 	private EarthCoordinates coordinates;
+	private MapWebView webView;
 	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.show);
+		initializeMapView();
+		((LocationManager) getSystemService(Context.LOCATION_SERVICE))
+				.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,
+						this);
+	}
+
+	private void initializeMapView() {
 		try {
 			Intent intent = getIntent();
 
 			String mapName = intent.getStringExtra("mapName");
-
-			((TextView) this.findViewById(R.id.showDebug)).setText(mapName);
 
 			String base = Environment.getExternalStorageDirectory()
 					.getAbsolutePath()
@@ -38,8 +48,8 @@ public class ShowMap extends Activity {
 					+ mapName
 					+ File.separator + mapName;
 
-			MapWebView wv = ((MapWebView) this.findViewById(R.id.showMap));
-			wv.loadUrl("file://" + base + ".jpg");
+			webView = ((MapWebView) this.findViewById(R.id.showMap));
+			webView.setMapUrl("file://" + base + ".jpg");
 
 			StreamUtil.safelyAcccess(new ObjectInputStream(new FileInputStream(
 					base + ".txt")), new CloseableUser() {
@@ -53,16 +63,33 @@ public class ShowMap extends Activity {
 					}
 				}
 			});
-			
-			wv.setCoordinates(coordinates);
-			
-			((TextView) this.findViewById(R.id.showDebug)).setText(coordinates
-					.toOSMString(1));
+
+			webView.setCoordinates(coordinates);
 		} catch (Exception e) {
-			((TextView) this.findViewById(R.id.showDebug)).setText(e.getClass()
+			Toast.makeText(this.getApplicationContext(), e.getClass()
 					.getCanonicalName()
-					+ " " + e.getMessage());
+					+ " " + e.getMessage(), Toast.LENGTH_LONG);
 			// TODO do something with exceptions
 		}
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		//webView.loadData(location.toString(), "text/plain", "ASCII");
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		//webView.loadData(provider.toString() + "disabled", "text/plain", "ASCII");
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		//webView.loadData(provider.toString() + "enabled", "text/plain", "ASCII");
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// Ignore
 	}
 }
