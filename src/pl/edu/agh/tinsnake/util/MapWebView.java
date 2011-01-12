@@ -55,21 +55,37 @@ public class MapWebView extends WebView {
 	}
 
 	public void refreshMap() {
-		this.loadDataWithBaseURL(null, generateHtml(), "text/html", "utf-8",
-				null);
-		Log.d("HTML", generateHtml());
+		Log.d("HTML", boundingBox.getLeft() + " " + boundingBox.getRight()
+				+ " " + boundingBox.getBottom() + " " + boundingBox.getTop());
+		try {
+			Log.d("HTML", generateHtml());
+			this.loadDataWithBaseURL(null, generateHtml(), "text/html",
+					"utf-8", null);
+		} catch (Exception e) {
+			Log.e("HTML", e.getClass() + " " + e.getMessage());
+		}
 	}
 
-	private String createPoint(double lng, double lat) {
-		return "<div style='width: 30px; height: 30px; background: rgba(0, 0, 255, 0.5); font-weight: bold; position: absolute; left: 20px; top: 20px; -webkit-border-radius: 15px; -moz-border-radius: 15px;'></div>";
+	private String createPoint(double lat, double lng) {
+		Log.d("HTML", lat + " " + lng);
+		lat = boundingBox.latToFraction(lat);
+		lng = boundingBox.lngToFraction(lng);
+		Log.d("HTML", lat + " " + lng);
+		String position = String.format(
+				"position: absolute; left: %d%%; top: %d%%;",
+				(int) (100 * lat), (int) (100 * lng));
+		return String
+				.format(
+						"<div style='width: 30px; height: 30px; background: rgba(0, 0, 255, 0.5); font-weight: bold; %s -webkit-border-radius: 15px; -moz-border-radius: 15px;'></div>",
+						position);
 	}
 
 	private String generateHtml() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("<html><body style='margin: 0px'>");
+		builder.append("<html><body style='margin: 0px'><div style='position: absolute;'>");
 		builder.append(String.format("<img src=\"%s\"/>", mapUrl));
-		builder.append(createPoint(1,1));
-		builder.append("</body></html>");
+		builder.append(createPoint(50, 20));
+		builder.append("</div></body></html>");
 		return builder.toString();
 	}
 }

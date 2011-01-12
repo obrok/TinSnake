@@ -17,21 +17,26 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.widget.Toast;
 
 public class ShowMap extends Activity implements LocationListener {
 	private BoundingBox boundingBox;
 	private MapWebView webView;
-	
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.show);
-		initializeMapView();
-		((LocationManager) getSystemService(Context.LOCATION_SERVICE))
-				.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,
-						this);
+		try {
+			super.onCreate(savedInstanceState);
+			setContentView(R.layout.show);
+			initializeMapView();
+			((LocationManager) getSystemService(Context.LOCATION_SERVICE))
+					.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+							0, 0, this);
+		} catch (Exception e) {
+			Log.e("ShowMap", e.getClass() + " " + e.getMessage());
+		}
 	}
 
 	private void initializeMapView() {
@@ -49,8 +54,7 @@ public class ShowMap extends Activity implements LocationListener {
 					+ File.separator + mapName;
 
 			webView = ((MapWebView) this.findViewById(R.id.showMap));
-			webView.setMapUrl("file://" + base + ".jpg");
-
+			
 			StreamUtil.safelyAcccess(new ObjectInputStream(new FileInputStream(
 					base + ".txt")), new CloseableUser() {
 				@Override
@@ -65,6 +69,9 @@ public class ShowMap extends Activity implements LocationListener {
 			});
 
 			webView.setBoundingBox(boundingBox);
+			
+			webView.setMapUrl("file://" + base + ".jpg");
+
 		} catch (Exception e) {
 			Toast.makeText(this.getApplicationContext(), e.getClass()
 					.getCanonicalName()
@@ -75,17 +82,19 @@ public class ShowMap extends Activity implements LocationListener {
 
 	@Override
 	public void onLocationChanged(Location location) {
-		//webView.loadData(location.toString(), "text/plain", "ASCII");
+		// webView.loadData(location.toString(), "text/plain", "ASCII");
 	}
 
 	@Override
 	public void onProviderDisabled(String provider) {
-		//webView.loadData(provider.toString() + "disabled", "text/plain", "ASCII");
+		// webView.loadData(provider.toString() + "disabled", "text/plain",
+		// "ASCII");
 	}
 
 	@Override
 	public void onProviderEnabled(String provider) {
-		//webView.loadData(provider.toString() + "enabled", "text/plain", "ASCII");
+		// webView.loadData(provider.toString() + "enabled", "text/plain",
+		// "ASCII");
 	}
 
 	@Override

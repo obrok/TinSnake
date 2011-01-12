@@ -6,7 +6,7 @@ public class BoundingBox implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private double left, right, top, bottom;
 
-	public BoundingBox(double left, double right, double top, double bottom) {
+	public BoundingBox(double left, double right, double bottom, double top) {
 		super();
 		this.left = left;
 		this.right = right;
@@ -53,12 +53,20 @@ public class BoundingBox implements Serializable {
 	private String dotted(double number) {
 		return new Double(number).toString().replace(",", ".");
 	}
+	
+	public double latToFraction(double lat){		
+		return 1 - (lat - bottom)/(top - bottom);
+	}
+	
+	public double lngToFraction(double lng){
+		return (lng - left)/(right - left);
+	}
 
 	public String toOSMString(int targetWidth) {
 		return String
 				.format(
 						"http://tile.openstreetmap.org/cgi-bin/export?bbox=%s,%s,%s,%s&scale=%d&format=jpeg",
-						dotted(left), dotted(top), dotted(right),
-						dotted(bottom), calculateScale(targetWidth));
+						dotted(left), dotted(bottom), dotted(right),
+						dotted(top), calculateScale(targetWidth));
 	}
 }

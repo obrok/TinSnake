@@ -22,11 +22,15 @@ import pl.edu.agh.tinsnake.util.CloseableUser;
 import pl.edu.agh.tinsnake.util.StreamUtil;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -42,6 +46,8 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		android.content.DialogInterface.OnClickListener {
 	private static final int MAP_NAME_DIALOG = 0;
 	private static final int SEARCH_LOCATION_DIALOG = 1;
+	private static final int PROGRESS_DIALOG = 2;
+	private static final int FAILURE_DIALOG = 3;
 
 	private EarthCoordinates coordinates;
 
@@ -57,6 +63,26 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		this.findViewById(R.id.map).setOnTouchListener(this);
 
 		refreshMap();
+	}
+
+	@Override
+	protected android.app.Dialog onCreateDialog(int id) {
+		switch (id) {
+		case PROGRESS_DIALOG:
+			ProgressDialog progressDialog = new ProgressDialog(this);
+			progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			progressDialog.setMessage("Downloading...");
+			return progressDialog;
+		case FAILURE_DIALOG:
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("Critical server failure.")
+			       .setCancelable(false)
+			       .setPositiveButton("OK",null);
+			return builder.create();
+			
+		default:
+			return null;
+		}
 	}
 
 	private Bitmap bitmap;
@@ -84,8 +110,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			throws MalformedURLException, IOException {
 		HttpURLConnection conn;
 		URL url = new URL(stringUrl);
-		((TextView) this.findViewById(R.id.prepareDebug))
-				.append(url.toString());
+
 		conn = (HttpURLConnection) url.openConnection();
 		conn.setDoInput(true);
 		conn.connect();
@@ -197,40 +222,68 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		alert.show();
 	}
 
-	private void saveMap(String name) {
-		try {
-			File dir = new File(Environment.getExternalStorageDirectory()
-					.getAbsolutePath()
-					+ File.separator + "mapsfolder" + File.separator + name);
-			dir.mkdirs();
+	private void saveMap(final String name) {
+		final Handler handler = new Handler() {
+			@Override
+			public void handleMessage(android.os.Message msg) {
+				dismissDialog(PROGRESS_DIALOG);
+				
+				if (!msg.getData().getBoolean("success")) {
+					showDialog(FAILURE_DIALOG);
+				}
+			}
+		};
 
-			File file = new File(dir.getPath() + File.separator + name + ".jpg");
-			StreamUtil.safelyAcccess(new FileOutputStream(file),
-					new CloseableUser() {
+		showDialog(PROGRESS_DIALOG);
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Message message = new Message();
+				Bundle bundle = new Bundle();
+				message.setData(bundle);
+				try {
+					File dir = new File(Environment
+							.getExternalStorageDirectory().getAbsolutePath()
+							+ File.separator
+							+ "mapsfolder"
+							+ File.separator
+							+ name);
+					dir.mkdirs();
+
+					File file = new File(dir.getPath() + File.separator + name
+							+ ".jpg");
+					StreamUtil.safelyAcccess(new FileOutputStream(file),
+							new CloseableUser() {
+								@Override
+								public void performAction(Closeable stream)
+										throws IOException {
+									Bitmap toSave = downloadBitmap(coordinates
+											.toBoundingBox().toOSMString(1000));
+									toSave.compress(Bitmap.CompressFormat.JPEG,
+											90, (OutputStream) stream);
+								}
+							});
+
+					file = new File(dir.getPath() + File.separator + name
+							+ ".txt");
+					StreamUtil.safelyAcccess(new ObjectOutputStream(
+							new FileOutputStream(file)), new CloseableUser() {
 						@Override
 						public void performAction(Closeable stream)
 								throws IOException {
-							Bitmap toSave = downloadBitmap(coordinates
-									.toBoundingBox().toOSMString(1000));
-							toSave.compress(Bitmap.CompressFormat.JPEG, 90,
-									(OutputStream) stream);
+							((ObjectOutputStream) stream)
+									.writeObject(coordinates.toBoundingBox());
 						}
 					});
-
-			file = new File(dir.getPath() + File.separator + name + ".txt");
-			StreamUtil.safelyAcccess(new ObjectOutputStream(
-					new FileOutputStream(file)), new CloseableUser() {
-				@Override
-				public void performAction(Closeable stream) throws IOException {
-					((ObjectOutputStream) stream).writeObject(coordinates
-							.toBoundingBox());
+					bundle.putBoolean("success", true);
+				} catch (Exception e) {
+					Log.e("SaveMap", e.getClass() + " " + e.getMessage());
+					bundle.putBoolean("success", false);
 				}
-			});
-		} catch (Exception e) {
-			((TextView) this.findViewById(R.id.prepareDebug)).setText(e
-					.getClass().getCanonicalName()
-					+ " " + e.getMessage());
-		}
+				handler.sendMessage(message);
+			}
+		}).start();
 	}
 
 	float scrollStartX, scrollStartY;
