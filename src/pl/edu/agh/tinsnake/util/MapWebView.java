@@ -72,7 +72,7 @@ public class MapWebView extends WebView {
 		lng = boundingBox.lngToFraction(lng);
 		Log.d("HTML", lat + " " + lng);
 		String position = String.format(
-				"position: absolute; left: %d%%; top: %d%%;",
+				"position: absolute; top: %d%%; left: %d%%;",
 				(int) (100 * lat), (int) (100 * lng));
 		return String
 				.format(
@@ -84,6 +84,8 @@ public class MapWebView extends WebView {
 		StringBuilder builder = new StringBuilder();
 		builder.append("<html><body style='margin: 0px'><div style='position: absolute;'>");
 		builder.append(String.format("<img src=\"%s\"/>", mapUrl));
+		builder.append(createPoint(50, 0));
+		builder.append(createPoint(50, 10));
 		builder.append(createPoint(50, 20));
 		builder.append("</div></body></html>");
 		return builder.toString();
