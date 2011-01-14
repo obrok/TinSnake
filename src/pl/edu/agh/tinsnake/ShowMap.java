@@ -82,6 +82,7 @@ public class ShowMap extends Activity implements LocationListener {
 
 	@Override
 	public void onLocationChanged(Location location) {
+		webView.setCurrentLocation(location);
 		// webView.loadData(location.toString(), "text/plain", "ASCII");
 	}
 

@@ -2,6 +2,7 @@ package pl.edu.agh.tinsnake.util;
 
 import pl.edu.agh.tinsnake.BoundingBox;
 import android.content.Context;
+import android.location.Location;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.webkit.WebView;
@@ -9,6 +10,8 @@ import android.webkit.WebView;
 public class MapWebView extends WebView {
 
 	private int center;
+	
+	private Location current;
 
 	private BoundingBox boundingBox;
 
@@ -65,8 +68,12 @@ public class MapWebView extends WebView {
 			Log.e("HTML", e.getClass() + " " + e.getMessage());
 		}
 	}
+	
+	private String createPoint(Location l, String color) {
+		return createPoint(l.getLatitude(), l.getLongitude(), color);
+	}
 
-	private String createPoint(double lat, double lng) {
+	private String createPoint(double lat, double lng, String color) {
 		Log.d("HTML", lat + " " + lng);
 		lat = boundingBox.latToFraction(lat);
 		lng = boundingBox.lngToFraction(lng);
@@ -76,18 +83,26 @@ public class MapWebView extends WebView {
 				(int) (100 * lat), (int) (100 * lng));
 		return String
 				.format(
-						"<div style='width: 30px; height: 30px; background: rgba(0, 0, 255, 0.5); font-weight: bold; %s -webkit-border-radius: 15px; -moz-border-radius: 15px;'></div>",
-						position);
+						"<div style='width: 30px; height: 30px; background: %s; font-weight: bold; %s -webkit-border-radius: 15px; -moz-border-radius: 15px;'></div>",
+						color, position);
 	}
 
 	private String generateHtml() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("<html><body style='margin: 0px'><div style='position: absolute;'>");
 		builder.append(String.format("<img src=\"%s\"/>", mapUrl));
-		builder.append(createPoint(50, 0));
-		builder.append(createPoint(50, 10));
-		builder.append(createPoint(50, 20));
+		builder.append(createPoint(50, 0, "rgba(0,0,255,0.5)"));
+		builder.append(createPoint(50, 10, "rgba(0,0,255,0.5)"));
+		builder.append(createPoint(50, 20, "rgba(0,0,255,0.5)"));
+		if (current != null){
+			builder.append(createPoint(current, "rgba(255,0,0,0.5)"));
+		}
 		builder.append("</div></body></html>");
 		return builder.toString();
+	}
+
+	public void setCurrentLocation(Location location) {
+		current = location;
+		refreshMap();
 	}
 }
