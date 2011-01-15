@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -42,6 +43,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.commons.io.IOUtils;
+
 public class PrepareMap extends Activity implements OnTouchListener,
 		android.content.DialogInterface.OnClickListener {
 	private static final int MAP_NAME_DIALOG = 0;
@@ -75,11 +78,10 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			return progressDialog;
 		case FAILURE_DIALOG:
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage("Critical server failure.")
-			       .setCancelable(false)
-			       .setPositiveButton("OK",null);
+			builder.setMessage("Critical server failure.").setCancelable(false)
+					.setPositiveButton("OK", null);
 			return builder.create();
-			
+
 		default:
 			return null;
 		}
@@ -117,6 +119,30 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		InputStream is = conn.getInputStream();
 		Bitmap b = BitmapFactory.decodeStream(is);
 		return b;
+	}
+
+	private String downloadXML(BoundingBox boundingBox, File file)
+			throws IOException {
+		HttpURLConnection conn;
+		URL url = new URL(boundingBox.toXMLString());
+
+		conn = (HttpURLConnection) url.openConnection();
+		conn.setDoInput(true);
+		conn.connect();
+		InputStream is = conn.getInputStream();
+
+		OutputStream out = new FileOutputStream(file);
+
+		byte buf[] = new byte[1024];
+		int len;
+		while ((len = is.read(buf)) > 0)
+			out.write(buf, 0, len);
+		out.close();
+		is.close();
+
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(is, writer);
+		return writer.toString();
 	}
 
 	private void searchLocation(String location) {
@@ -227,7 +253,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			@Override
 			public void handleMessage(android.os.Message msg) {
 				dismissDialog(PROGRESS_DIALOG);
-				
+
 				if (!msg.getData().getBoolean("success")) {
 					showDialog(FAILURE_DIALOG);
 				}
@@ -252,6 +278,14 @@ public class PrepareMap extends Activity implements OnTouchListener,
 					dir.mkdirs();
 
 					File file = new File(dir.getPath() + File.separator + name
+							+ ".xml");
+
+					String toSave = downloadXML(coordinates.toBoundingBox(), file);
+					Log.d("XML", toSave);
+
+					Log.d("XML", "saved");					
+
+					file = new File(dir.getPath() + File.separator + name
 							+ ".jpg");
 					StreamUtil.safelyAcccess(new FileOutputStream(file),
 							new CloseableUser() {
@@ -267,6 +301,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 
 					file = new File(dir.getPath() + File.separator + name
 							+ ".txt");
+
 					StreamUtil.safelyAcccess(new ObjectOutputStream(
 							new FileOutputStream(file)), new CloseableUser() {
 						@Override

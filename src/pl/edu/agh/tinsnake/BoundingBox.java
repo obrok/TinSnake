@@ -54,7 +54,7 @@ public class BoundingBox implements Serializable {
 		return new Double(number).toString().replace(",", ".");
 	}
 	
-	public double latToFraction(double lat){		
+	public double latToFraction(double lat){
 		return 1 - (lat - bottom)/(top - bottom);
 	}
 	
@@ -68,5 +68,13 @@ public class BoundingBox implements Serializable {
 						"http://tile.openstreetmap.org/cgi-bin/export?bbox=%s,%s,%s,%s&scale=%d&format=jpeg",
 						dotted(left), dotted(bottom), dotted(right),
 						dotted(top), calculateScale(targetWidth));
+	}
+
+	public String toXMLString() {
+		return String
+		.format(
+				"http://api.openstreetmap.org/api/0.6/map?bbox=%s,%s,%s,%s",
+				dotted(left), dotted(bottom), dotted(right),
+				dotted(top));
 	}
 }

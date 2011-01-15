@@ -1,6 +1,9 @@
 package pl.edu.agh.tinsnake.util;
 
+import java.util.List;
+
 import pl.edu.agh.tinsnake.BoundingBox;
+import pl.edu.agh.tinsnake.GPSPoint;
 import android.content.Context;
 import android.location.Location;
 import android.util.AttributeSet;
@@ -10,10 +13,12 @@ import android.webkit.WebView;
 public class MapWebView extends WebView {
 
 	private int center;
-	
+
 	private Location current;
 
 	private BoundingBox boundingBox;
+
+	private List<GPSPoint> points;
 
 	public BoundingBox getBoundingBox() {
 		return boundingBox;
@@ -68,7 +73,7 @@ public class MapWebView extends WebView {
 			Log.e("HTML", e.getClass() + " " + e.getMessage());
 		}
 	}
-	
+
 	private String createPoint(Location l, String color) {
 		return createPoint(l.getLatitude(), l.getLongitude(), color);
 	}
@@ -89,14 +94,23 @@ public class MapWebView extends WebView {
 
 	private String generateHtml() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("<html><body style='margin: 0px'><div style='position: absolute;'>");
+		builder
+				.append("<html><body style='margin: 0px'><div style='position: absolute;'>");
 		builder.append(String.format("<img src=\"%s\"/>", mapUrl));
-		builder.append(createPoint(50, 0, "rgba(0,0,255,0.5)"));
-		builder.append(createPoint(50, 10, "rgba(0,0,255,0.5)"));
-		builder.append(createPoint(50, 20, "rgba(0,0,255,0.5)"));
-		if (current != null){
-			builder.append(createPoint(current, "rgba(255,0,0,0.5)"));
+
+		if (points != null) {
+			for (GPSPoint point : points) {
+				builder.append(createPoint(point.getLat(), point.getLng(),
+						"rgba(0,0,255,0.5)"));
+			}
 		}
+
+		// builder.append(createPoint(50, 0, "rgba(0,0,255,0.5)"));
+		// builder.append(createPoint(50, 10, "rgba(0,0,255,0.5)"));
+		// builder.append(createPoint(50, 20, "rgba(0,0,255,0.5)"));
+		//if (current != null) {
+		//	builder.append(createPoint(current, "rgba(255,0,0,0.5)"));
+		//}
 		builder.append("</div></body></html>");
 		return builder.toString();
 	}
@@ -104,5 +118,9 @@ public class MapWebView extends WebView {
 	public void setCurrentLocation(Location location) {
 		current = location;
 		refreshMap();
+	}
+
+	public void setGPSPoints(List<GPSPoint> points) {
+		this.points = points;
 	}
 }

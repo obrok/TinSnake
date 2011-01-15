@@ -5,6 +5,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import pl.edu.agh.tinsnake.util.CloseableUser;
 import pl.edu.agh.tinsnake.util.MapWebView;
@@ -18,7 +28,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
 
 public class ShowMap extends Activity implements LocationListener {
 	private BoundingBox boundingBox;
@@ -54,7 +63,7 @@ public class ShowMap extends Activity implements LocationListener {
 					+ File.separator + mapName;
 
 			webView = ((MapWebView) this.findViewById(R.id.showMap));
-			
+
 			StreamUtil.safelyAcccess(new ObjectInputStream(new FileInputStream(
 					base + ".txt")), new CloseableUser() {
 				@Override
@@ -69,15 +78,70 @@ public class ShowMap extends Activity implements LocationListener {
 			});
 
 			webView.setBoundingBox(boundingBox);
-			
 			webView.setMapUrl("file://" + base + ".jpg");
 
+			List<GPSPoint> points = loadPoints(base);
+			webView.setGPSPoints(points);
+
 		} catch (Exception e) {
-			Toast.makeText(this.getApplicationContext(), e.getClass()
-					.getCanonicalName()
-					+ " " + e.getMessage(), Toast.LENGTH_LONG);
-			// TODO do something with exceptions
+			Log.e("SHOW EXCEPTION", e.getClass().getCanonicalName() + " "
+					+ e.getMessage());
 		}
+	}
+
+	private List<GPSPoint> loadPoints(String base) {
+		try {
+
+			Log.d("POINT", "starting");
+			File file = new File(base + ".xml");
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			dbf.setIgnoringElementContentWhitespace(true);
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document doc = db.parse(file);
+			NodeList nodeList = doc.getElementsByTagName("tag");
+
+			List<GPSPoint> result = new ArrayList<GPSPoint>();
+
+			int i = 0;
+			Log.d("POINT", "length " + nodeList.getLength());
+			while (i < nodeList.getLength()) {
+				Node node = nodeList.item(i++);
+
+				NamedNodeMap childAttr = node.getAttributes();
+				Node key = childAttr.getNamedItem("k");
+				Node value = childAttr.getNamedItem("v");
+
+				if (key == null || value == null)
+					continue;
+
+				Node parent = node.getParentNode();
+
+				if (!parent.getNodeName().equals("node"))
+					continue;
+
+				NamedNodeMap attr = parent.getAttributes();
+				Node latNode = attr.getNamedItem("lat");
+				Node lonNode = attr.getNamedItem("lon");
+
+				if (latNode == null || lonNode == null)
+					continue;
+
+				double lat = Double.parseDouble(latNode.getNodeValue());
+				double lon = Double.parseDouble(lonNode.getNodeValue());
+
+				if (key.getNodeValue().equals("amenity")
+						&& value.getNodeValue().equals("restaurant")) {
+					result.add(new GPSPoint(lat, lon, "",
+							GPSPointClass.Restaurant));
+					Log.d("POINT", "parsed");
+				}
+			}
+			return result;
+		} catch (Exception e) {
+			Log.e("SHOW EXCEPTION", e.getClass().getCanonicalName() + " "
+					+ e.getMessage());
+		}
+		return new ArrayList<GPSPoint>();
 	}
 
 	@Override
