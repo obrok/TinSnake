@@ -53,13 +53,13 @@ public class BoundingBox implements Serializable {
 	private String dotted(double number) {
 		return new Double(number).toString().replace(",", ".");
 	}
-	
-	public double latToFraction(double lat){
-		return 1 - (lat - bottom)/(top - bottom);
+
+	public double latToFraction(double lat) {
+		return 1 - (lat - bottom) / (top - bottom);
 	}
-	
-	public double lngToFraction(double lng){
-		return (lng - left)/(right - left);
+
+	public double lngToFraction(double lng) {
+		return (lng - left) / (right - left);
 	}
 
 	public String toOSMString(int targetWidth) {
@@ -71,10 +71,12 @@ public class BoundingBox implements Serializable {
 	}
 
 	public String toXMLString() {
-		return String
-		.format(
+		return String.format(
 				"http://api.openstreetmap.org/api/0.6/map?bbox=%s,%s,%s,%s",
-				dotted(left), dotted(bottom), dotted(right),
-				dotted(top));
+				dotted(left), dotted(bottom), dotted(right), dotted(top));
+	}
+
+	public boolean contains(double lat, double lng) {
+		return lat > bottom && lat < top && lng > left && lng < right;
 	}
 }

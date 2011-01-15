@@ -91,7 +91,6 @@ public class ShowMap extends Activity implements LocationListener {
 
 	private List<GPSPoint> loadPoints(String base) {
 		try {
-
 			Log.d("POINT", "starting");
 			File file = new File(base + ".xml");
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -147,7 +146,6 @@ public class ShowMap extends Activity implements LocationListener {
 	@Override
 	public void onLocationChanged(Location location) {
 		webView.setCurrentLocation(location);
-		// webView.loadData(location.toString(), "text/plain", "ASCII");
 	}
 
 	@Override

@@ -75,10 +75,18 @@ public class MapWebView extends WebView {
 	}
 
 	private String createPoint(Location l, String color) {
+		if (l == null){
+			return "";
+		}
 		return createPoint(l.getLatitude(), l.getLongitude(), color);
 	}
 
 	private String createPoint(double lat, double lng, String color) {
+		if (!getBoundingBox().contains(lat, lng)){
+			Log.d("CREATE POINT", "outside map");
+			return "";
+		}
+		
 		Log.d("HTML", lat + " " + lng);
 		lat = boundingBox.latToFraction(lat);
 		lng = boundingBox.lngToFraction(lng);
@@ -105,12 +113,8 @@ public class MapWebView extends WebView {
 			}
 		}
 
-		// builder.append(createPoint(50, 0, "rgba(0,0,255,0.5)"));
-		// builder.append(createPoint(50, 10, "rgba(0,0,255,0.5)"));
-		// builder.append(createPoint(50, 20, "rgba(0,0,255,0.5)"));
-		//if (current != null) {
-		//	builder.append(createPoint(current, "rgba(255,0,0,0.5)"));
-		//}
+		builder.append(createPoint(current, "rgba(255,0,0,0.5)"));
+		
 		builder.append("</div></body></html>");
 		return builder.toString();
 	}
