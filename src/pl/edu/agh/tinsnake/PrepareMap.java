@@ -74,11 +74,11 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		case PROGRESS_DIALOG:
 			ProgressDialog progressDialog = new ProgressDialog(this);
 			progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			progressDialog.setMessage("Downloading...");
+			progressDialog.setMessage("Loading...");
 			return progressDialog;
 		case FAILURE_DIALOG:
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage("Critical server failure.").setCancelable(false)
+			builder.setMessage("Can't connect to the server. Try again in a few minutes.").setCancelable(false)
 					.setPositiveButton("OK", null);
 			return builder.create();
 
@@ -143,57 +143,6 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(is, writer);
 		return writer.toString();
-	}
-
-	private void searchLocation(String location) {
-		HttpURLConnection connection = null;
-
-		try {
-			((TextView) this.findViewById(R.id.prepareDebug)).append(location);
-			URL url = new URL(
-					String
-							.format(
-									"http://nominatim.openstreetmap.org/search?q=%s&format=xml",
-									location));
-
-			connection = (HttpURLConnection) url.openConnection();
-			connection.setDoInput(true);
-			connection.connect();
-
-			DocumentBuilder db = DocumentBuilderFactory.newInstance()
-					.newDocumentBuilder();
-
-			InputStream is = connection.getInputStream();
-			Document d = db.parse(is);
-
-			Node n = d.getElementsByTagName("place").item(0);
-
-			((TextView) this.findViewById(R.id.prepareDebug)).append("node ");
-
-			((TextView) this.findViewById(R.id.prepareDebug)).append(n
-					.getNodeName());
-
-			NamedNodeMap map = n.getAttributes();
-
-			((TextView) this.findViewById(R.id.prepareDebug)).append("attr ");
-
-			String lat = map.getNamedItem("lat").getNodeValue().toString();
-			String lon = map.getNamedItem("lon").getNodeValue().toString();
-
-			coordinates = new EarthCoordinates(Double.parseDouble(lat), Double
-					.parseDouble(lon), this.getWindowManager()
-					.getDefaultDisplay().getWidth(), 10);
-		} catch (Exception e) {
-			((TextView) this.findViewById(R.id.prepareDebug)).append(e
-					.getClass().getCanonicalName()
-					+ " " + e.getMessage());
-		} finally {
-			try {
-				// conn.disconnect();
-			} catch (Exception e) {
-				// ignore
-			}
-		}
 	}
 
 	@Override
@@ -280,10 +229,11 @@ public class PrepareMap extends Activity implements OnTouchListener,
 					File file = new File(dir.getPath() + File.separator + name
 							+ ".xml");
 
-					String toSave = downloadXML(coordinates.toBoundingBox(), file);
+					String toSave = downloadXML(coordinates.toBoundingBox(),
+							file);
 					Log.d("XML", toSave);
 
-					Log.d("XML", "saved");					
+					Log.d("XML", "saved");
 
 					file = new File(dir.getPath() + File.separator + name
 							+ ".jpg");
@@ -315,6 +265,74 @@ public class PrepareMap extends Activity implements OnTouchListener,
 				} catch (Exception e) {
 					Log.e("SaveMap", e.getClass() + " " + e.getMessage());
 					bundle.putBoolean("success", false);
+				}
+				handler.sendMessage(message);
+			}
+		}).start();
+	}
+
+	private void searchLocation(final String location) {
+		final Handler handler = new Handler() {
+			@Override
+			public void handleMessage(android.os.Message msg) {
+				dismissDialog(PROGRESS_DIALOG);
+				refreshMap();
+
+				if (!msg.getData().getBoolean("success")) {
+					showDialog(FAILURE_DIALOG);
+				}
+			}
+		};
+
+		showDialog(PROGRESS_DIALOG);
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Message message = new Message();
+				Bundle bundle = new Bundle();
+				message.setData(bundle);
+				HttpURLConnection connection = null;
+				try {
+					URL url = new URL(
+							String
+									.format(
+											"http://nominatim.openstreetmap.org/search?q=%s&format=xml",
+											location));
+
+					connection = (HttpURLConnection) url.openConnection();
+					connection.setDoInput(true);
+					connection.connect();
+
+					DocumentBuilder db = DocumentBuilderFactory.newInstance()
+							.newDocumentBuilder();
+
+					InputStream is = connection.getInputStream();
+					Document d = db.parse(is);
+
+					Node n = d.getElementsByTagName("place").item(0);
+
+					NamedNodeMap map = n.getAttributes();
+
+					String lat = map.getNamedItem("lat").getNodeValue()
+							.toString();
+					String lon = map.getNamedItem("lon").getNodeValue()
+							.toString();
+
+					coordinates = new EarthCoordinates(Double.parseDouble(lat),
+							Double.parseDouble(lon), getWindowManager()
+									.getDefaultDisplay().getWidth(), 10);
+
+					bundle.putBoolean("success", true);
+				} catch (Exception e) {
+					Log.e("Search ", e.getClass() + " " + e.getMessage());
+					bundle.putBoolean("success", false);
+				} finally {
+					try {
+						// conn.disconnect();
+					} catch (Exception e) {
+						// ignore
+					}
 				}
 				handler.sendMessage(message);
 			}
