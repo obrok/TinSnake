@@ -5,24 +5,23 @@ import java.util.List;
 import pl.edu.agh.tinsnake.BoundingBox;
 import pl.edu.agh.tinsnake.GPSPoint;
 import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.Picture;
 import android.location.Location;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 public class MapWebView extends WebView {
 
 	public MapWebView(Context context) {
 		super(context);
 	}
-	
+
 	public MapWebView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
-	
+
 	public MapWebView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 	}
@@ -32,50 +31,90 @@ public class MapWebView extends WebView {
 	private BoundingBox boundingBox;
 	private List<GPSPoint> points;
 
-	private int mapZoom;
+	private int mapZoom = 1;
 	private String mapUrl;
-	
-	private int lastX=0;
-	private int lastY=0;
-	
+
+	private int lastX = 0;
+	private int lastY = 0;
+
 	public void setMapUrl(String string) {
 		mapUrl = string;
 		refreshMap();
 	}
 
-	public void setMapZoom(int mapZoom) {
-		this.mapZoom = mapZoom;
-	}
-
 	public BoundingBox getBoundingBox() {
 		return boundingBox;
 	}
+
 	public void setBoundingBox(BoundingBox boundingBox) {
 		this.boundingBox = boundingBox;
 	}
 
-	public void refreshMap() {
-		lastX = getScrollX();
-		lastY = getScrollY();
-		
+	@Override
+	public boolean zoomIn() {
+		mapZoom++;
+		refreshMap(mapZoom - 1);
+		return false;
+	}
+
+	private float scrollStartX, scrollStartY;
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_DOWN:
+			scrollStartX = event.getX();
+			scrollStartY = event.getY();
+			break;
+
+		case MotionEvent.ACTION_UP:
+
+			float deltaX = scrollStartX - event.getX();
+			float deltaY = event.getY() - scrollStartY;
+
+			if (Math.abs(deltaX) + Math.abs(deltaY) < 10) {
+				zoomIn();
+			}
+
+			break;
+
+		default:
+			break;
+		}
+
+		return super.onTouchEvent(event);
+	}
+
+	private void refreshMap() {
+		refreshMap(mapZoom);
+	}
+
+	private void refreshMap(int previousZoom) {
+
+		double scale = (double) mapZoom / (double) previousZoom;
+
+		lastX = (int) (scale * getScrollX() + (getWidth() / 2)
+				* (mapZoom - previousZoom));
+		lastY = (int) (scale * getScrollY() + (getHeight() / 2)
+				* (mapZoom - previousZoom));
+
 		scrollToPreviousPosition = true;
-		
-		this.setPictureListener( new PictureListener() {
+
+		this.setPictureListener(new PictureListener() {
 
 			@Override
 			public void onNewPicture(WebView arg0, Picture arg1) {
-				if (scrollToPreviousPosition){
+				if (scrollToPreviousPosition) {
 					scrollTo(lastX, lastY);
 					scrollToPreviousPosition = false;
+					Log.d("SCROLLING TO", lastX + " " + lastY);
 				}
-				Log.d("SCROLLING TO", lastX + " " + lastY);		
 			}
-	    });
-		
-		//Log.d("HTML", boundingBox.getLeft() + " " + boundingBox.getRight()
-			//	+ " " + boundingBox.getBottom() + " " + boundingBox.getTop());
+		});
+
 		try {
-			//Log.d("HTML", generateHtml());
+			// Log.d("HTML", generateHtml());
 			this.loadDataWithBaseURL(null, generateHtml(), "text/html",
 					"utf-8", null);
 		} catch (Exception e) {
@@ -117,9 +156,8 @@ public class MapWebView extends WebView {
 								"<html><body style='margin: 0px'><div style='position: absolute; width: %dpx'>",
 								mapZoom * 1000));
 
-		
-			for (int j = mapZoom - 1; j >= 0; j--) {
-				for (int i = 0; i < mapZoom; i++) {
+		for (int j = mapZoom - 1; j >= 0; j--) {
+			for (int i = 0; i < mapZoom; i++) {
 				String imgSrc = String.format(mapUrl, mapZoom, i, j);
 				builder.append(String.format(
 						"<img style='margin: 0px; padding: 0px;' src=\"%s\"/>",
