@@ -5,20 +5,43 @@ import java.util.List;
 import pl.edu.agh.tinsnake.BoundingBox;
 import pl.edu.agh.tinsnake.GPSPoint;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Picture;
 import android.location.Location;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 public class MapWebView extends WebView {
 
-	private int center;
+	public MapWebView(Context context) {
+		super(context);
+	}
+	
+	public MapWebView(Context context, AttributeSet attrs) {
+		super(context, attrs);
+	}
+	
+	public MapWebView(Context context, AttributeSet attrs, int defStyle) {
+		super(context, attrs, defStyle);
+	}
+
+	private boolean scrollToPreviousPosition = false;
 	private Location current;
 	private BoundingBox boundingBox;
+	private List<GPSPoint> points;
 
 	private int mapZoom;
-
-	private List<GPSPoint> points;
+	private String mapUrl;
+	
+	private int lastX=0;
+	private int lastY=0;
+	
+	public void setMapUrl(String string) {
+		mapUrl = string;
+		refreshMap();
+	}
 
 	public void setMapZoom(int mapZoom) {
 		this.mapZoom = mapZoom;
@@ -27,50 +50,32 @@ public class MapWebView extends WebView {
 	public BoundingBox getBoundingBox() {
 		return boundingBox;
 	}
-
 	public void setBoundingBox(BoundingBox boundingBox) {
 		this.boundingBox = boundingBox;
 	}
 
-	private String mapUrl;
-
-	public MapWebView(Context context) {
-		super(context);
-		// TODO Auto-generated constructor stub
-	}
-
-	public MapWebView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		// TODO Auto-generated constructor stub
-	}
-
-	public MapWebView(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	protected void onSizeChanged(int w, int h, int ow, int oh) {
-		center = w;
-		scrollToCenter();
-		super.onSizeChanged(w, h, ow, oh);
-		this.zoomOut();
-	}
-
-	private void scrollToCenter() {
-		scrollTo(center, center);
-	}
-
-	public void setMapUrl(String string) {
-		mapUrl = string;
-		refreshMap();
-	}
-
 	public void refreshMap() {
-		Log.d("HTML", boundingBox.getLeft() + " " + boundingBox.getRight()
-				+ " " + boundingBox.getBottom() + " " + boundingBox.getTop());
+		lastX = getScrollX();
+		lastY = getScrollY();
+		
+		scrollToPreviousPosition = true;
+		
+		this.setPictureListener( new PictureListener() {
+
+			@Override
+			public void onNewPicture(WebView arg0, Picture arg1) {
+				if (scrollToPreviousPosition){
+					scrollTo(lastX, lastY);
+					scrollToPreviousPosition = false;
+				}
+				Log.d("SCROLLING TO", lastX + " " + lastY);		
+			}
+	    });
+		
+		//Log.d("HTML", boundingBox.getLeft() + " " + boundingBox.getRight()
+			//	+ " " + boundingBox.getBottom() + " " + boundingBox.getTop());
 		try {
-			Log.d("HTML", generateHtml());
+			//Log.d("HTML", generateHtml());
 			this.loadDataWithBaseURL(null, generateHtml(), "text/html",
 					"utf-8", null);
 		} catch (Exception e) {
