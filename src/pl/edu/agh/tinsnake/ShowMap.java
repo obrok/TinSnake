@@ -8,14 +8,6 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import pl.edu.agh.tinsnake.util.CloseableUser;
 import pl.edu.agh.tinsnake.util.MapWebView;
 import pl.edu.agh.tinsnake.util.StreamUtil;
@@ -76,71 +68,28 @@ public class ShowMap extends Activity implements LocationListener {
 					}
 				}
 			});
+			
+			StreamUtil.safelyAcccess(new ObjectInputStream(new FileInputStream(
+					base + ".info")), new CloseableUser() {
+				@SuppressWarnings("unchecked")
+				@Override
+				public void performAction(Closeable stream) throws IOException {
+					try {
+						webView.setGPSPoints((List<GPSPoint>) ((ObjectInputStream) stream)
+								.readObject());
+					} catch (ClassNotFoundException e) {
+						webView.setGPSPoints(new ArrayList<GPSPoint>());
+					}
+				}
+			});
 
 			webView.setBoundingBox(boundingBox);
 			webView.setMapUrl("file://" + base + ".jpg");
 
-			List<GPSPoint> points = loadPoints(base);
-			webView.setGPSPoints(points);
-
 		} catch (Exception e) {
 			Log.e("SHOW EXCEPTION", e.getClass().getCanonicalName() + " "
 					+ e.getMessage());
 		}
-	}
-
-	private List<GPSPoint> loadPoints(String base) {
-		try {
-			Log.d("POINT", "starting");
-			File file = new File(base + ".xml");
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setIgnoringElementContentWhitespace(true);
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			Document doc = db.parse(file);
-			NodeList nodeList = doc.getElementsByTagName("tag");
-
-			List<GPSPoint> result = new ArrayList<GPSPoint>();
-
-			int i = 0;
-			Log.d("POINT", "length " + nodeList.getLength());
-			while (i < nodeList.getLength()) {
-				Node node = nodeList.item(i++);
-
-				NamedNodeMap childAttr = node.getAttributes();
-				Node key = childAttr.getNamedItem("k");
-				Node value = childAttr.getNamedItem("v");
-
-				if (key == null || value == null)
-					continue;
-
-				Node parent = node.getParentNode();
-
-				if (!parent.getNodeName().equals("node"))
-					continue;
-
-				NamedNodeMap attr = parent.getAttributes();
-				Node latNode = attr.getNamedItem("lat");
-				Node lonNode = attr.getNamedItem("lon");
-
-				if (latNode == null || lonNode == null)
-					continue;
-
-				double lat = Double.parseDouble(latNode.getNodeValue());
-				double lon = Double.parseDouble(lonNode.getNodeValue());
-
-				if (key.getNodeValue().equals("amenity")
-						&& value.getNodeValue().equals("restaurant")) {
-					result.add(new GPSPoint(lat, lon, "",
-							GPSPointClass.Restaurant));
-					Log.d("POINT", "parsed");
-				}
-			}
-			return result;
-		} catch (Exception e) {
-			Log.e("SHOW EXCEPTION", e.getClass().getCanonicalName() + " "
-					+ e.getMessage());
-		}
-		return new ArrayList<GPSPoint>();
 	}
 
 	@Override

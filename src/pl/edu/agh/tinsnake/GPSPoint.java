@@ -1,7 +1,10 @@
 package pl.edu.agh.tinsnake;
 
-public class GPSPoint {
+import java.io.Serializable;
+
+public class GPSPoint implements Serializable{
 	
+	private static final long serialVersionUID = 1L;
 	public GPSPoint(double lat, double lng, String name,
 			GPSPointClass pointClass) {
 		super();

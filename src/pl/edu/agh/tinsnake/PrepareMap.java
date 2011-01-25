@@ -7,10 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,6 +19,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import pl.edu.agh.tinsnake.util.CloseableUser;
 import pl.edu.agh.tinsnake.util.StreamUtil;
@@ -42,8 +44,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.apache.commons.io.IOUtils;
 
 public class PrepareMap extends Activity implements OnTouchListener,
 		android.content.DialogInterface.OnClickListener {
@@ -121,7 +121,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		return b;
 	}
 
-	private String downloadXML(BoundingBox boundingBox, File file)
+	private InputStream downloadXML(BoundingBox boundingBox)
 			throws IOException {
 		HttpURLConnection conn;
 		URL url = new URL(boundingBox.toXMLString());
@@ -131,18 +131,60 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		conn.connect();
 		InputStream is = conn.getInputStream();
 
-		OutputStream out = new FileOutputStream(file);
+		return is;
+	}
+	
+	private List<GPSPoint> loadPoints(InputStream is) {
+		try {
+			Log.d("POINT", "starting");
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			dbf.setIgnoringElementContentWhitespace(true);
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document doc = db.parse(is);
+			NodeList nodeList = doc.getElementsByTagName("tag");
 
-		byte buf[] = new byte[1024];
-		int len;
-		while ((len = is.read(buf)) > 0)
-			out.write(buf, 0, len);
-		out.close();
-		is.close();
+			List<GPSPoint> result = new ArrayList<GPSPoint>();
 
-		StringWriter writer = new StringWriter();
-		IOUtils.copy(is, writer);
-		return writer.toString();
+			int i = 0;
+			Log.d("POINT", "length " + nodeList.getLength());
+			while (i < nodeList.getLength()) {
+				Node node = nodeList.item(i++);
+
+				NamedNodeMap childAttr = node.getAttributes();
+				Node key = childAttr.getNamedItem("k");
+				Node value = childAttr.getNamedItem("v");
+
+				if (key == null || value == null)
+					continue;
+
+				Node parent = node.getParentNode();
+
+				if (!parent.getNodeName().equals("node"))
+					continue;
+
+				NamedNodeMap attr = parent.getAttributes();
+				Node latNode = attr.getNamedItem("lat");
+				Node lonNode = attr.getNamedItem("lon");
+
+				if (latNode == null || lonNode == null)
+					continue;
+
+				double lat = Double.parseDouble(latNode.getNodeValue());
+				double lon = Double.parseDouble(lonNode.getNodeValue());
+
+				if (key.getNodeValue().equals("amenity")
+						&& value.getNodeValue().equals("restaurant")) {
+					result.add(new GPSPoint(lat, lon, "",
+							GPSPointClass.Restaurant));
+					Log.d("POINT", "parsed");
+				}
+			}
+			return result;
+		} catch (Exception e) {
+			Log.e("SHOW EXCEPTION", e.getClass().getCanonicalName() + " "
+					+ e.getMessage());
+		}
+		return new ArrayList<GPSPoint>();
 	}
 
 	@Override
@@ -227,13 +269,33 @@ public class PrepareMap extends Activity implements OnTouchListener,
 					dir.mkdirs();
 
 					File file = new File(dir.getPath() + File.separator + name
-							+ ".xml");
-
-					String toSave = downloadXML(coordinates.toBoundingBox(),
-							file);
-					Log.d("XML", toSave);
-
-					Log.d("XML", "saved");
+							+ ".info");
+					List<GPSPoint> points;
+					try{
+						Log.d("INFO", "downloading XML");
+						InputStream toSave = downloadXML(coordinates.toBoundingBox());
+						Log.d("INFO", "loading GPS points");
+						points = loadPoints(toSave);
+					}
+					catch (Exception e){
+						points = new ArrayList<GPSPoint>();
+					}
+					
+					final List<GPSPoint> finalPoints = points;
+					
+					Log.d("INFO", "saving GPS points");
+					
+					StreamUtil.safelyAcccess(new ObjectOutputStream(
+							new FileOutputStream(file)), new CloseableUser() {
+						@Override
+						public void performAction(Closeable stream)
+								throws IOException {
+							((ObjectOutputStream) stream)
+									.writeObject(finalPoints);
+						}
+					});
+					
+					Log.d("INFO", "saved");
 
 					file = new File(dir.getPath() + File.separator + name
 							+ ".jpg");
