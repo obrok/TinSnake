@@ -2,6 +2,7 @@ package pl.edu.agh.tinsnake;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -260,75 +261,73 @@ public class PrepareMap extends Activity implements OnTouchListener,
 				Bundle bundle = new Bundle();
 				message.setData(bundle);
 				try {
-					File dir = new File(Environment
-							.getExternalStorageDirectory().getAbsolutePath()
-							+ File.separator
-							+ "mapsfolder"
-							+ File.separator
-							+ name);
+					File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()	+ File.separator + "mapsfolder"	+ File.separator + name);
 					dir.mkdirs();
-
-					File file = new File(dir.getPath() + File.separator + name
-							+ ".info");
+					File file = new File(dir.getPath() + File.separator + name + ".info");
 					List<GPSPoint> points;
 					try{
-						Log.d("INFO", "downloading XML");
-						InputStream toSave = downloadXML(coordinates.toBoundingBox());
-						Log.d("INFO", "loading GPS points");
-						points = loadPoints(toSave);
+						//InputStream toSave = downloadXML(coordinates.toBoundingBox());
+						points = new ArrayList<GPSPoint>();
+						//points = loadPoints(toSave);
 					}
 					catch (Exception e){
 						points = new ArrayList<GPSPoint>();
 					}
-					
-					final List<GPSPoint> finalPoints = points;
-					
-					Log.d("INFO", "saving GPS points");
-					
-					StreamUtil.safelyAcccess(new ObjectOutputStream(
-							new FileOutputStream(file)), new CloseableUser() {
-						@Override
-						public void performAction(Closeable stream)
-								throws IOException {
-							((ObjectOutputStream) stream)
-									.writeObject(finalPoints);
+					saveObject(file, points);
+					Log.d("SaveMap", "GPS points saved");
+
+					for (int zoom = 1; zoom < 4; zoom++) {
+						
+						for (int i = 0; i < zoom; i++){
+							for (int j = 0; j < zoom; j++){
+								file = new File(dir.getPath() + File.separator + name + "_zoom" + zoom + "_img" + i + "_" + j + ".jpg");
+								
+								final int fZ, fI, fJ;
+								fZ = zoom;
+								fI = i;
+								fJ = j;
+								
+								StreamUtil.safelyAcccess(new FileOutputStream(file),
+										new CloseableUser() {
+											@Override
+											public void performAction(Closeable stream)
+													throws IOException {
+												BoundingBox current = coordinates.toBoundingBox().getSubBoundingBox(fZ, fI, fJ);
+												Log.d("SaveMap1", coordinates.toBoundingBox().toOSMString(1000));
+												Log.d("SaveMap2", current.toOSMString(1000));
+												Bitmap toSave = downloadBitmap(current.toOSMString(1000));
+												toSave.compress(Bitmap.CompressFormat.JPEG,
+														90, (OutputStream) stream);
+											}
+										});
+							}
 						}
-					});
+						
+						Log.d("SaveMap", "map " + zoom + " saved");
+					}
+
+					file = new File(dir.getPath() + File.separator + name + ".txt");
 					
-					Log.d("INFO", "saved");
-
-					file = new File(dir.getPath() + File.separator + name
-							+ ".jpg");
-					StreamUtil.safelyAcccess(new FileOutputStream(file),
-							new CloseableUser() {
-								@Override
-								public void performAction(Closeable stream)
-										throws IOException {
-									Bitmap toSave = downloadBitmap(coordinates
-											.toBoundingBox().toOSMString(1000));
-									toSave.compress(Bitmap.CompressFormat.JPEG,
-											90, (OutputStream) stream);
-								}
-							});
-
-					file = new File(dir.getPath() + File.separator + name
-							+ ".txt");
-
-					StreamUtil.safelyAcccess(new ObjectOutputStream(
-							new FileOutputStream(file)), new CloseableUser() {
-						@Override
-						public void performAction(Closeable stream)
-								throws IOException {
-							((ObjectOutputStream) stream)
-									.writeObject(coordinates.toBoundingBox());
-						}
-					});
+					saveObject(file, coordinates.toBoundingBox());
 					bundle.putBoolean("success", true);
 				} catch (Exception e) {
 					Log.e("SaveMap", e.getClass() + " " + e.getMessage());
 					bundle.putBoolean("success", false);
 				}
 				handler.sendMessage(message);
+			}
+
+			private void saveObject(File file, final Object object) throws IOException,
+					FileNotFoundException {
+				StreamUtil.safelyAcccess(new ObjectOutputStream(
+						new FileOutputStream(file)), new CloseableUser() {
+					@Override
+					public void performAction(Closeable stream)
+							throws IOException {
+						((ObjectOutputStream) stream)
+								.writeObject(object);
+					}
+				});
 			}
 		}).start();
 	}
@@ -402,7 +401,6 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	}
 
 	float scrollStartX, scrollStartY;
-
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 
@@ -432,7 +430,6 @@ public class PrepareMap extends Activity implements OnTouchListener,
 
 		return false;
 	}
-
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
 		switch (currentDialog) {

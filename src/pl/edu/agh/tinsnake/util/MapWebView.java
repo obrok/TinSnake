@@ -13,12 +13,16 @@ import android.webkit.WebView;
 public class MapWebView extends WebView {
 
 	private int center;
-
 	private Location current;
-
 	private BoundingBox boundingBox;
 
+	private int mapZoom;
+
 	private List<GPSPoint> points;
+
+	public void setMapZoom(int mapZoom) {
+		this.mapZoom = mapZoom;
+	}
 
 	public BoundingBox getBoundingBox() {
 		return boundingBox;
@@ -75,18 +79,18 @@ public class MapWebView extends WebView {
 	}
 
 	private String createPoint(Location l, String color) {
-		if (l == null){
+		if (l == null) {
 			return "";
 		}
 		return createPoint(l.getLatitude(), l.getLongitude(), color);
 	}
 
 	private String createPoint(double lat, double lng, String color) {
-		if (!getBoundingBox().contains(lat, lng)){
+		if (!getBoundingBox().contains(lat, lng)) {
 			Log.d("CREATE POINT", "outside map");
 			return "";
 		}
-		
+
 		Log.d("HTML", lat + " " + lng);
 		lat = boundingBox.latToFraction(lat);
 		lng = boundingBox.lngToFraction(lng);
@@ -103,8 +107,21 @@ public class MapWebView extends WebView {
 	private String generateHtml() {
 		StringBuilder builder = new StringBuilder();
 		builder
-				.append("<html><body style='margin: 0px'><div style='position: absolute;'>");
-		builder.append(String.format("<img src=\"%s\"/>", mapUrl));
+				.append(String
+						.format(
+								"<html><body style='margin: 0px'><div style='position: absolute; width: %dpx'>",
+								mapZoom * 1000));
+
+		
+			for (int j = mapZoom - 1; j >= 0; j--) {
+				for (int i = 0; i < mapZoom; i++) {
+				String imgSrc = String.format(mapUrl, mapZoom, i, j);
+				builder.append(String.format(
+						"<img style='margin: 0px; padding: 0px;' src=\"%s\"/>",
+						imgSrc));
+			}
+			builder.append("<br/>");
+		}
 
 		if (points != null) {
 			for (GPSPoint point : points) {
@@ -114,7 +131,7 @@ public class MapWebView extends WebView {
 		}
 
 		builder.append(createPoint(current, "rgba(255,0,0,0.5)"));
-		
+
 		builder.append("</div></body></html>");
 		return builder.toString();
 	}

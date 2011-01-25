@@ -79,4 +79,21 @@ public class BoundingBox implements Serializable {
 	public boolean contains(double lat, double lng) {
 		return lat > bottom && lat < top && lng > left && lng < right;
 	}
+
+	public BoundingBox getSubBoundingBox(int zoom, int i, int j) {
+		
+		double horizontalSize = right - left;
+		double verticalSize = top - bottom;
+		
+		double subHorizontalSize = horizontalSize / zoom;
+		double subVerticalSize = verticalSize / zoom;
+		
+		double subLeft = left + i*subHorizontalSize;
+		double subRight = subLeft + subHorizontalSize;
+		
+		double subBottom = bottom + j*subVerticalSize;
+		double subTop = subBottom + subVerticalSize;
+		
+		return new BoundingBox(subLeft, subRight, subBottom, subTop);
+	}
 }

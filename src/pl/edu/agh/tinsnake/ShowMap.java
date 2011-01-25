@@ -84,7 +84,8 @@ public class ShowMap extends Activity implements LocationListener {
 			});
 
 			webView.setBoundingBox(boundingBox);
-			webView.setMapUrl("file://" + base + ".jpg");
+			webView.setMapZoom(2);
+			webView.setMapUrl("file://" + base + "_zoom%d_img%d_%d.jpg");
 
 		} catch (Exception e) {
 			Log.e("SHOW EXCEPTION", e.getClass().getCanonicalName() + " "
