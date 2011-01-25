@@ -96,8 +96,8 @@ public class MapWebView extends WebView {
 				(int) (100 * lat), (int) (100 * lng));
 		return String
 				.format(
-						"<div style='width: 30px; height: 30px; background: %s; font-weight: bold; %s -webkit-border-radius: 15px; -moz-border-radius: 15px;'></div>",
-						color, position);
+						"<div style='%s'><div style='width: 30px; height: 30px; background: %s; -webkit-border-radius: 15px; -moz-border-radius: 15px; position: relative; left: -15px; top: -15px;'></div></div>",
+						position, color);
 	}
 
 	private String generateHtml() {
