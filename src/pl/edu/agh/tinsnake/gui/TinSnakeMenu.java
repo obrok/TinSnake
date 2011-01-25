@@ -1,4 +1,4 @@
-package pl.edu.agh.tinsnake;
+package pl.edu.agh.tinsnake.gui;
 
 import java.io.File;
 

@@ -1,9 +1,8 @@
 package pl.edu.agh.tinsnake.util;
 
-import java.util.List;
-
-import pl.edu.agh.tinsnake.BoundingBox;
 import pl.edu.agh.tinsnake.GPSPoint;
+import pl.edu.agh.tinsnake.Map;
+import pl.edu.agh.tinsnake.MapHelper;
 import android.content.Context;
 import android.graphics.Picture;
 import android.location.Location;
@@ -25,37 +24,40 @@ public class MapWebView extends WebView {
 	public MapWebView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 	}
-
+	
+	private Map map;
 	private boolean scrollToPreviousPosition = false;
 	private Location current;
-	private BoundingBox boundingBox;
-	private List<GPSPoint> points;
-
 	private int mapZoom = 1;
-	private String mapUrl;
-
 	private int lastX = 0;
 	private int lastY = 0;
 
-	public void setMapUrl(String string) {
-		mapUrl = string;
+	public void setMap(Map map) {
+		this.map = map;
 		refreshMap();
 	}
-
-	public BoundingBox getBoundingBox() {
-		return boundingBox;
+	
+	public Map getMap() {
+		return map;
 	}
-
-	public void setBoundingBox(BoundingBox boundingBox) {
-		this.boundingBox = boundingBox;
+	
+	@Override
+	public boolean zoomIn() {
+		if (mapZoom < map.getMaxZoom()){
+			mapZoom++;
+			refreshMap(mapZoom - 1);
+		}
+		return false;
 	}
 
 	@Override
-	public boolean zoomIn() {
-		mapZoom++;
-		refreshMap(mapZoom - 1);
+	public boolean zoomOut() {
+		if (mapZoom > 1) {
+			mapZoom--;
+			refreshMap(mapZoom + 1);
+		}
 		return false;
-	}
+	};
 
 	private float scrollStartX, scrollStartY;
 
@@ -114,7 +116,7 @@ public class MapWebView extends WebView {
 		});
 
 		try {
-			// Log.d("HTML", generateHtml());
+			Log.d("HTML", generateHtml());
 			this.loadDataWithBaseURL(null, generateHtml(), "text/html",
 					"utf-8", null);
 		} catch (Exception e) {
@@ -130,14 +132,14 @@ public class MapWebView extends WebView {
 	}
 
 	private String createPoint(double lat, double lng, String color) {
-		if (!getBoundingBox().contains(lat, lng)) {
+		if (!map.getBoundingBox().contains(lat, lng)) {
 			Log.d("CREATE POINT", "outside map");
 			return "";
 		}
 
 		Log.d("HTML", lat + " " + lng);
-		lat = boundingBox.latToFraction(lat);
-		lng = boundingBox.lngToFraction(lng);
+		lat = map.getBoundingBox().latToFraction(lat);
+		lng = map.getBoundingBox().lngToFraction(lng);
 		Log.d("HTML", lat + " " + lng);
 		String position = String.format(
 				"position: absolute; top: %d%%; left: %d%%;",
@@ -158,7 +160,7 @@ public class MapWebView extends WebView {
 
 		for (int j = mapZoom - 1; j >= 0; j--) {
 			for (int i = 0; i < mapZoom; i++) {
-				String imgSrc = String.format(mapUrl, mapZoom, i, j);
+				String imgSrc = "file://" + MapHelper.getMapImageFilePath(map, mapZoom, i, j);
 				builder.append(String.format(
 						"<img style='margin: 0px; padding: 0px;' src=\"%s\"/>",
 						imgSrc));
@@ -166,8 +168,8 @@ public class MapWebView extends WebView {
 			builder.append("<br/>");
 		}
 
-		if (points != null) {
-			for (GPSPoint point : points) {
+		if (map.getPoints() != null) {
+			for (GPSPoint point : map.getPoints()) {
 				builder.append(createPoint(point.getLat(), point.getLng(),
 						"rgba(0,0,255,0.5)"));
 			}
@@ -182,9 +184,5 @@ public class MapWebView extends WebView {
 	public void setCurrentLocation(Location location) {
 		current = location;
 		refreshMap();
-	}
-
-	public void setGPSPoints(List<GPSPoint> points) {
-		this.points = points;
 	}
 }
