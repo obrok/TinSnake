@@ -1,5 +1,7 @@
 package pl.edu.agh.tinsnake.gui;
 
+import pl.edu.agh.tinsnake.GPSPoint;
+import pl.edu.agh.tinsnake.GPSPointClass;
 import pl.edu.agh.tinsnake.MapHelper;
 import pl.edu.agh.tinsnake.util.MapWebView;
 import android.app.Activity;
@@ -60,7 +62,13 @@ public class ShowMap extends Activity {
 					
 					@Override
 					public void onLocationChanged(Location location) {
-						webView.setCurrentLocation(location);
+						try{
+							webView.setCurrentLocation(new GPSPoint(location.getLatitude(), location
+									.getLongitude(), "pozycja", GPSPointClass.Location));
+						}
+						catch(Exception e){
+							
+						}
 					}
 				});
 		

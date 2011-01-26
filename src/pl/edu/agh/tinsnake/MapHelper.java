@@ -61,13 +61,22 @@ public class MapHelper {
 
 		Log.d("DOWNLOAD", "max zoom: " + map.getMaxZoom());
 
+		int width = 0;
+		int height = 0;
+
 		for (int zoom = 1; zoom <= map.getMaxZoom(); zoom++) {
 			for (int i = 0; i < zoom; i++) {
 				for (int j = 0; j < zoom; j++) {
 					Log.d("DOWNLOAD", "downloading map image");
-					downloadMapImage(map, zoom, i, j);
+					Bitmap bitmap = downloadMapImage(map, zoom, i, j);
+					width += bitmap.getWidth();
+					height += bitmap.getHeight();
 				}
 			}
+			width /= zoom;
+			height /= zoom;
+			map.setMapSize(width, height);
+			Log.d("SaveMap", "w " + width + " height " + height);
 			Log.d("SaveMap", "map " + zoom + " saved");
 		}
 	}
@@ -78,7 +87,9 @@ public class MapHelper {
 		return getFolderPath(map.getName()) + File.separator + fileName;
 	}
 
-	private static void downloadMapImage(final Map map, final int zoom,
+	private static Bitmap toSave;
+
+	private static Bitmap downloadMapImage(final Map map, final int zoom,
 			final int i, final int j) throws FileNotFoundException, IOException {
 		String filepath = getMapImageFilePath(map, zoom, i, j);
 		Log.d("DOWNLOAD", filepath);
@@ -91,12 +102,13 @@ public class MapHelper {
 							throws IOException {
 						BoundingBox current = map.getBoundingBox()
 								.getSubBoundingBox(zoom, i, j);
-						Bitmap toSave = downloadBitmap(current
-								.toOSMString(1000));
+						toSave = downloadBitmap(current.toOSMString(1000));
+
 						toSave.compress(Bitmap.CompressFormat.JPEG, 90,
 								(OutputStream) stream);
 					}
 				});
+		return toSave;
 	}
 
 	public static void saveMap(Map map) throws FileNotFoundException,
@@ -217,10 +229,15 @@ public class MapHelper {
 	public static EarthCoordinates searchLocation(String location, int width)
 			throws IOException, ParserConfigurationException,
 			FactoryConfigurationError, SAXException {
+		
+		Log.d("SEARCH", "entering");
+		
 		HttpURLConnection connection = null;
 		URL url = new URL(String.format(
 				"http://nominatim.openstreetmap.org/search?q=%s&format=xml",
 				location));
+		
+		Log.d("SEARCH", url.toString());
 
 		connection = (HttpURLConnection) url.openConnection();
 		connection.setDoInput(true);
@@ -231,6 +248,8 @@ public class MapHelper {
 
 		InputStream is = connection.getInputStream();
 		Document d = db.parse(is);
+		
+		Log.d("SEARCH", "parsed");
 
 		Node n = d.getElementsByTagName("place").item(0);
 
