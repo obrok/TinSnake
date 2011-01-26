@@ -39,7 +39,7 @@ public class ShowMap extends Activity {
 
 	private void initializeLocationListener() {
 		((LocationManager) getSystemService(Context.LOCATION_SERVICE))
-		.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+		.requestLocationUpdates(LocationManager.GPS_PROVIDER,
 				0, 0, new LocationListener() {
 					
 					@Override

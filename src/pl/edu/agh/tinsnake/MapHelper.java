@@ -86,10 +86,10 @@ public class MapHelper {
 
 		Log.d("DOWNLOAD", "max zoom: " + map.getMaxZoom());
 
-		int width = 0;
-		int height = 0;
-
 		for (int zoom = 1; zoom <= map.getMaxZoom(); zoom++) {
+			int width = 0;
+			int height = 0;
+			
 			for (int i = 0; i < zoom; i++) {
 				for (int j = 0; j < zoom; j++) {
 					Log.d("DOWNLOAD", "downloading map image");

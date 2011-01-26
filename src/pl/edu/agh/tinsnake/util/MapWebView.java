@@ -58,10 +58,11 @@ public class MapWebView extends WebView {
 		Paint paint = new Paint();
 		paint.setStrokeWidth(5);
 		paint.setColor(Color.RED);
-		paint.setAlpha(50);
+		paint.setAlpha(70);
 		super.onDraw(canvas);
 		
 		MapSize size = map.getMapSize(mapZoom);
+		Log.d("DRAWING", size.getWidth() + " " + size.getHeight());
 
 		for (int i = 0; i < map.getLocationHistory().size() - 1; i++) {
 			GPSPoint from = map.getLocationHistory().get(i);
@@ -196,7 +197,9 @@ public class MapWebView extends WebView {
 			}
 		}
 
-		builder.append(createPoint(current.getLat(), current.getLng(), "rgba(255,0,0,0.5)"));
+		if (current != null){
+			builder.append(createPoint(current.getLat(), current.getLng(), "rgba(255,0,0,0.5)"));
+		}
 
 		builder.append("</div></body></html>");
 		return builder.toString();
@@ -205,6 +208,11 @@ public class MapWebView extends WebView {
 	public void setCurrentLocation(GPSPoint location) {
 		map.addCurrentLocation(location);
 		current = location;
+		try {
+			MapHelper.saveMap(map);
+		} catch (Exception e) {
+			Log.e("SaveLocation", e.getClass() + " " + e.getMessage());
+		}
 		refreshMap();
 	}
 }

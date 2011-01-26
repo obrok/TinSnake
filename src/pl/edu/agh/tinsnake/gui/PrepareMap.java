@@ -150,6 +150,8 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	/** The input. */
 	private EditText input;
 
+	private boolean foundLocation;
+
 	/**
 	 * Show input dialog.
 	 *
@@ -216,6 +218,8 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	 * @param location the location
 	 */
 	private void searchLocation(final String location) {
+		foundLocation = true;
+		
 		final Handler handler = new Handler() {
 			@Override
 			public void handleMessage(android.os.Message msg) {
@@ -224,6 +228,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 
 				if (!msg.getData().getBoolean("success")) {
 					showDialog(FAILURE_DIALOG);
+					foundLocation = false;
 				}
 			}
 		};
@@ -298,7 +303,13 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			break;
 		case SEARCH_LOCATION_DIALOG:
 			searchLocation(input.getText().toString());
-			refreshMap();
+			
+			if (foundLocation){
+				zoom = 10;
+				refreshMap();
+			}
+			
+			
 			break;
 		default:
 			break;
