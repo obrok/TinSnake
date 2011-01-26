@@ -35,8 +35,20 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class MapHelper.
+ */
 public class MapHelper {
 
+	/**
+	 * Save object.
+	 *
+	 * @param file the file
+	 * @param object the object
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws FileNotFoundException the file not found exception
+	 */
 	private static void saveObject(File file, final Object object)
 			throws IOException, FileNotFoundException {
 		StreamUtil.safelyAcccess(new ObjectOutputStream(new FileOutputStream(
@@ -48,11 +60,24 @@ public class MapHelper {
 		});
 	}
 
+	/**
+	 * Gets the folder path.
+	 *
+	 * @param mapName the map name
+	 * @return the folder path
+	 */
 	private static String getFolderPath(String mapName) {
 		return Environment.getExternalStorageDirectory().getAbsolutePath()
 				+ File.separator + "mapsfolder" + File.separator + mapName;
 	}
 
+	/**
+	 * Download map images.
+	 *
+	 * @param map the map
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static void downloadMapImages(Map map) throws FileNotFoundException,
 			IOException {
 		Log.d("DOWNLOAD", "about to download");
@@ -81,14 +106,35 @@ public class MapHelper {
 		}
 	}
 
+	/**
+	 * Gets the map image file path.
+	 *
+	 * @param map the map
+	 * @param zoom the zoom
+	 * @param i the i
+	 * @param j the j
+	 * @return the map image file path
+	 */
 	public static String getMapImageFilePath(Map map, int zoom, int i, int j) {
 		String fileName = String.format("%s_zoom%d_img%d_%d.jpg",
 				map.getName(), zoom, i, j);
 		return getFolderPath(map.getName()) + File.separator + fileName;
 	}
 
+	/** The to save. */
 	private static Bitmap toSave;
 
+	/**
+	 * Download map image.
+	 *
+	 * @param map the map
+	 * @param zoom the zoom
+	 * @param i the i
+	 * @param j the j
+	 * @return the bitmap
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	private static Bitmap downloadMapImage(final Map map, final int zoom,
 			final int i, final int j) throws FileNotFoundException, IOException {
 		String filepath = getMapImageFilePath(map, zoom, i, j);
@@ -111,6 +157,13 @@ public class MapHelper {
 		return toSave;
 	}
 
+	/**
+	 * Save map.
+	 *
+	 * @param map the map
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static void saveMap(Map map) throws FileNotFoundException,
 			IOException {
 		File file = new File(getFolderPath(map.getName()) + File.separator
@@ -118,8 +171,18 @@ public class MapHelper {
 		saveObject(file, map);
 	}
 
+	/** The result. */
 	private static Map result;
 
+	/**
+	 * Load map.
+	 *
+	 * @param mapName the map name
+	 * @return the map
+	 * @throws StreamCorruptedException the stream corrupted exception
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static Map loadMap(String mapName) throws StreamCorruptedException,
 			FileNotFoundException, IOException {
 		String filepath = getFolderPath(mapName) + File.separator + mapName
@@ -139,6 +202,13 @@ public class MapHelper {
 		return result;
 	}
 
+	/**
+	 * Downloads XML describing the given bounding box and returns it as the input stream.
+	 *
+	 * @param boundingBox the bounding box
+	 * @return the input stream
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	private static InputStream downloadXML(BoundingBox boundingBox)
 			throws IOException {
 		HttpURLConnection conn;
@@ -152,6 +222,12 @@ public class MapHelper {
 		return is;
 	}
 
+	/**
+	 * Parses the given XML input stream and returns the list of PGSPoints.
+	 *
+	 * @param is the input stream
+	 * @return the list
+	 */
 	private static List<GPSPoint> loadPoints(InputStream is) {
 		try {
 			Log.d("POINT", "starting");
@@ -205,6 +281,12 @@ public class MapHelper {
 		return new ArrayList<GPSPoint>();
 	}
 
+	/**
+	 * Downloads information about the given map (set of points located on the map).
+	 *
+	 * @param map the map
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static void downloadMapInfo(Map map) throws IOException {
 		InputStream is = downloadXML(map.getBoundingBox());
 		List<GPSPoint> points = loadPoints(is);
@@ -212,6 +294,14 @@ public class MapHelper {
 		saveMap(map);
 	}
 
+	/**
+	 * Downloads bitmap from the given URL.
+	 *
+	 * @param stringUrl the string url
+	 * @return the bitmap
+	 * @throws MalformedURLException the malformed url exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static Bitmap downloadBitmap(String stringUrl)
 			throws MalformedURLException, IOException {
 		Log.d("DOWNLOAD BITMAP", stringUrl);
@@ -226,7 +316,18 @@ public class MapHelper {
 		return b;
 	}
 
-	public static EarthCoordinates searchLocation(String location, int width)
+	/**
+	 * Search location.
+	 *
+	 * @param location the location
+	 * @param width the width
+	 * @return the earth coordinates
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ParserConfigurationException the parser configuration exception
+	 * @throws FactoryConfigurationError the factory configuration error
+	 * @throws SAXException the sAX exception
+	 */
+	public static EarthCoordinates searchLocation(String location)
 			throws IOException, ParserConfigurationException,
 			FactoryConfigurationError, SAXException {
 		
@@ -259,6 +360,6 @@ public class MapHelper {
 		String lon = map.getNamedItem("lon").getNodeValue().toString();
 
 		return new EarthCoordinates(Double.parseDouble(lat), Double
-				.parseDouble(lon), width, 10);
+				.parseDouble(lon));
 	}
 }

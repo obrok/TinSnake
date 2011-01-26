@@ -22,31 +22,56 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PrepareMap.
+ */
 public class PrepareMap extends Activity implements OnTouchListener,
 		android.content.DialogInterface.OnClickListener {
+	
+	/** The Constant MAP_NAME_DIALOG. */
 	private static final int MAP_NAME_DIALOG = 0;
+	
+	/** The Constant SEARCH_LOCATION_DIALOG. */
 	private static final int SEARCH_LOCATION_DIALOG = 1;
+	
+	/** The Constant PROGRESS_DIALOG. */
 	private static final int PROGRESS_DIALOG = 2;
+	
+	/** The Constant FAILURE_DIALOG. */
 	private static final int FAILURE_DIALOG = 3;
 
+	/** The coordinates. */
 	private EarthCoordinates coordinates;
+	
+	/** The bitmap. */
 	private Bitmap bitmap;
+	
+	/** The current dialog. */
 	private int currentDialog;
+	
+	private int zoom = 2;
 
-	/** Called when the activity is first created. */
+	/**
+	 * Called when the activity is first created.
+	 *
+	 * @param savedInstanceState the saved instance state
+	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.prepare);
 
-		coordinates = new EarthCoordinates(0, 0, this.getWindowManager()
-				.getDefaultDisplay().getWidth(), 2);
+		coordinates = new EarthCoordinates(0, 0);
 		this.findViewById(R.id.map).setClickable(true);
 		this.findViewById(R.id.map).setOnTouchListener(this);
 
 		refreshMap();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateDialog(int)
+	 */
 	@Override
 	protected android.app.Dialog onCreateDialog(int id) {
 		switch (id) {
@@ -67,9 +92,13 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		}
 	}
 
+	/**
+	 * Refresh map.
+	 */
 	private void refreshMap() {
 		try {
-			bitmap = MapHelper.downloadBitmap(coordinates.toOSMString());
+			bitmap = MapHelper.downloadBitmap(coordinates.toOSMString(this.getWindowManager()
+					.getDefaultDisplay().getWidth(), zoom));
 		} catch (Exception e) {
 			Toast.makeText(getApplicationContext(),
 					"Can't refresh map :(",
@@ -80,6 +109,9 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		((ImageView) this.findViewById(R.id.map)).setImageBitmap(bitmap);
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -87,6 +119,9 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		return true;
 	};
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -100,12 +135,11 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			return true;
 
 		case R.id.zoomInMenuItem:
-			coordinates.zoomIn();
+			zoom++;
 			refreshMap();
 			return true;
 		case R.id.zoomOutMenuItem:
-			coordinates.zoomOut();
-
+			zoom--;
 			refreshMap();
 			return true;
 		default:
@@ -113,8 +147,15 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		}
 	}
 
+	/** The input. */
 	private EditText input;
 
+	/**
+	 * Show input dialog.
+	 *
+	 * @param title the title
+	 * @param currentDialog the current dialog
+	 */
 	private void showInputDialog(String title, int currentDialog) {
 		this.currentDialog = currentDialog;
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -128,6 +169,11 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		alert.show();
 	}
 
+	/**
+	 * Save map.
+	 *
+	 * @param name the name
+	 */
 	private void saveMap(final String name) {
 		final Handler handler = new Handler() {
 			@Override
@@ -146,7 +192,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			@Override
 			public void run() {
 				Log.d("SaveMap", "about to save");
-				Map map = new Map(name, coordinates.toBoundingBox(), 3);
+				Map map = new Map(name, coordinates.toBoundingBox(zoom), 3);
 				
 				Message message = new Message();
 				Bundle bundle = new Bundle();
@@ -164,6 +210,11 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		}).start();
 	}
 
+	/**
+	 * Search location.
+	 *
+	 * @param location the location
+	 */
 	private void searchLocation(final String location) {
 		final Handler handler = new Handler() {
 			@Override
@@ -186,8 +237,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 				Bundle bundle = new Bundle();
 				message.setData(bundle);
 				try {
-					coordinates = MapHelper.searchLocation(location, getWindowManager()
-							.getDefaultDisplay().getWidth());
+					coordinates = MapHelper.searchLocation(location);
 					bundle.putBoolean("success", true);
 				} catch (Exception e) {
 					Log.e("Search ", e.getClass() + " " + e.getMessage());
@@ -198,8 +248,12 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		}).start();
 	}
 
+	/** The scroll start y. */
 	float scrollStartX, scrollStartY;
 
+	/* (non-Javadoc)
+	 * @see android.view.View.OnTouchListener#onTouch(android.view.View, android.view.MotionEvent)
+	 */
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 
@@ -214,10 +268,13 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			float deltaX = scrollStartX - event.getX();
 			float deltaY = event.getY() - scrollStartY;
 
-			coordinates.moveCenter(deltaX, deltaY);
+			coordinates.moveCenter(deltaX, deltaY, this.getWindowManager()
+					.getDefaultDisplay().getWidth(), zoom);
 
 			if (Math.abs(deltaX) + Math.abs(deltaY) < 10) {
-				coordinates.zoomIn(event.getX(), event.getY());
+				coordinates.zoomIn(event.getX(), event.getY(), this.getWindowManager()
+						.getDefaultDisplay().getWidth(), zoom);
+				zoom++;
 			}
 			refreshMap();
 
@@ -230,6 +287,9 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.content.DialogInterface.OnClickListener#onClick(android.content.DialogInterface, int)
+	 */
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
 		switch (currentDialog) {

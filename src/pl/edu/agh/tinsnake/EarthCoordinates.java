@@ -20,8 +20,6 @@ public class EarthCoordinates implements Serializable {
 	 * @param lng
 	 */
 	private double lat, lng;
-	private int size;
-	private int zoom;
 
 	public double getLat() {
 		return lat;
@@ -31,23 +29,13 @@ public class EarthCoordinates implements Serializable {
 		return lng;
 	}
 
-	public int getSize() {
-		return size;
-	}
-
-	public int getZoom() {
-		return zoom;
-	}
-
-	public EarthCoordinates(double lat, double lng, int size, int zoom) {
+	public EarthCoordinates(double lat, double lng) {
 		super();
 		this.lat = lat;
 		this.lng = lng;
-		this.size = size;
-		this.zoom = zoom;
 	}
 
-	public void moveCenter(float deltaX, float deltaY) {
+	public void moveCenter(float deltaX, float deltaY, int size, int zoom) {
 		deltaX /= size;
 		deltaY /= size;
 
@@ -58,25 +46,15 @@ public class EarthCoordinates implements Serializable {
 		lat += vertSize * deltaY;
 	}
 
-	public void zoomIn(float x, float y) {
+	public void zoomIn(float x, float y, int size, int zoom) {
 		double horSize = 360 / Math.pow(2, zoom - 1);
 		double vertSize = 171 / Math.pow(2, zoom - 1);
-
-		zoom += 1;
 
 		lng += (x / size - 0.5) * horSize;
 		lat += (0.5 - y / size) * vertSize;
 	}
 
-	public void zoomIn() {
-		zoom += 1;
-	}
-
-	public void zoomOut() {
-		zoom -= 1;
-	}
-
-	public String toOSMString() {
+	public String toOSMString(int size, int zoom) {
 		String lattitude = String.format("%f", lat).replace(',', '.');
 		String longitude = String.format("%f", lng).replace(',', '.');
 		return String
@@ -85,7 +63,7 @@ public class EarthCoordinates implements Serializable {
 						lattitude, longitude, zoom, size, size);
 	}
 
-	public BoundingBox toBoundingBox() {
+	public BoundingBox toBoundingBox(int zoom) {
 		double horSize = 360 / Math.pow(2, zoom - 1);
 		double vertSize = 171 / Math.pow(2, zoom - 1);
 
