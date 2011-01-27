@@ -12,9 +12,16 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
 
+/**
+ * An activity used to navigate in the application.
+ */
 public class TinSnakeMenu extends Activity implements OnClickListener {
 	
-	/** Called when the activity is first created. */
+	/**
+	 * Called when the activity is first created.
+	 *
+	 * @param savedInstanceState the saved instance state
+	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -23,6 +30,9 @@ public class TinSnakeMenu extends Activity implements OnClickListener {
 		this.findViewById(R.id.showButton).setOnClickListener(this);
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.View.OnClickListener#onClick(android.view.View)
+	 */
 	@Override
 	public void onClick(View v) {
 		Intent intent = null;

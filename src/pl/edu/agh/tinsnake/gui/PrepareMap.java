@@ -22,9 +22,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class PrepareMap.
+ * An activity used to prepare and save map.
  */
 public class PrepareMap extends Activity implements OnTouchListener,
 		android.content.DialogInterface.OnClickListener {
@@ -41,15 +40,16 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	/** The Constant FAILURE_DIALOG. */
 	private static final int FAILURE_DIALOG = 3;
 
-	/** The coordinates. */
+	/** The coordinates of the currently displayed map. */
 	private EarthCoordinates coordinates;
 	
-	/** The bitmap. */
+	/** The bitmap containing the currently displayed map. */
 	private Bitmap bitmap;
 	
 	/** The current dialog. */
 	private int currentDialog;
 	
+	/** The current zoom level */
 	private int zoom = 2;
 
 	/**
@@ -93,7 +93,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	}
 
 	/**
-	 * Refresh map.
+	 * Refreshes map - downloads the new image of the map using the updated coordinates.
 	 */
 	private void refreshMap() {
 		try {
@@ -153,7 +153,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	private boolean foundLocation;
 
 	/**
-	 * Show input dialog.
+	 * Shows input dialog.
 	 *
 	 * @param title the title
 	 * @param currentDialog the current dialog
@@ -172,7 +172,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	}
 
 	/**
-	 * Save map.
+	 * Saves map of the currently displayed region using the given map name.
 	 *
 	 * @param name the name
 	 */
@@ -213,7 +213,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	}
 
 	/**
-	 * Search location.
+	 * Searches the given location and refreshes map if the given location has been found.
 	 *
 	 * @param location the location
 	 */
@@ -253,7 +253,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		}).start();
 	}
 
-	/** The scroll start y. */
+	/** Used for determining if user scrolled or zoom the map. */
 	float scrollStartX, scrollStartY;
 
 	/* (non-Javadoc)

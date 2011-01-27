@@ -35,14 +35,13 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class MapHelper.
+ * Collection of static helper methods for dealing with Map objects.
  */
 public class MapHelper {
 
 	/**
-	 * Save object.
+	 * Safely saves the given object in the given file.
 	 *
 	 * @param file the file
 	 * @param object the object
@@ -61,7 +60,7 @@ public class MapHelper {
 	}
 
 	/**
-	 * Gets the folder path.
+	 * Gets the folder path where the map of the given name is (or will be) stored.
 	 *
 	 * @param mapName the map name
 	 * @return the folder path
@@ -72,7 +71,7 @@ public class MapHelper {
 	}
 
 	/**
-	 * Download map images.
+	 * Downloads and saves images used for displaying the given map offline (images are saved in the external storage).
 	 *
 	 * @param map the map
 	 * @throws FileNotFoundException the file not found exception
@@ -100,17 +99,17 @@ public class MapHelper {
 			}
 			width /= zoom;
 			height /= zoom;
-			map.setMapSize(width, height);
+			map.setMapSize(zoom, width, height);
 			Log.d("SaveMap", "w " + width + " height " + height);
 			Log.d("SaveMap", "map " + zoom + " saved");
 		}
 	}
 
 	/**
-	 * Gets the map image file path.
+	 * Gets the map tile image file path using the given zoom and tile coordinates.
 	 *
 	 * @param map the map
-	 * @param zoom the zoom
+	 * @param zoom the current zoom
 	 * @param i the i
 	 * @param j the j
 	 * @return the map image file path
@@ -121,11 +120,11 @@ public class MapHelper {
 		return getFolderPath(map.getName()) + File.separator + fileName;
 	}
 
-	/** The to save. */
+	/** The bitmap to save. */
 	private static Bitmap toSave;
 
 	/**
-	 * Download map image.
+	 * Downloads the tile image whose position is defined by i and j coordinates.
 	 *
 	 * @param map the map
 	 * @param zoom the zoom
@@ -158,7 +157,7 @@ public class MapHelper {
 	}
 
 	/**
-	 * Save map.
+	 * Serializes the given map object.
 	 *
 	 * @param map the map
 	 * @throws FileNotFoundException the file not found exception
@@ -175,7 +174,7 @@ public class MapHelper {
 	private static Map result;
 
 	/**
-	 * Load map.
+	 * Deserializes the map object of the given name.
 	 *
 	 * @param mapName the map name
 	 * @return the map
@@ -223,7 +222,7 @@ public class MapHelper {
 	}
 
 	/**
-	 * Parses the given XML input stream and returns the list of PGSPoints.
+	 * Parses the given XML input stream and returns the list of GPSPoints.
 	 *
 	 * @param is the input stream
 	 * @return the list
@@ -297,7 +296,7 @@ public class MapHelper {
 	/**
 	 * Downloads bitmap from the given URL.
 	 *
-	 * @param stringUrl the string url
+	 * @param stringUrl the string URL
 	 * @return the bitmap
 	 * @throws MalformedURLException the malformed url exception
 	 * @throws IOException Signals that an I/O exception has occurred.
@@ -317,7 +316,7 @@ public class MapHelper {
 	}
 
 	/**
-	 * Search location.
+	 * Uses OSM API to find the location of the given location (address, name of the city, country etc.).
 	 *
 	 * @param location the location
 	 * @param width the width

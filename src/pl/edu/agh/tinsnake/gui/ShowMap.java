@@ -20,11 +20,24 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+/**
+ * An activity used to display one of the saved maps.
+ * @author mn
+ *
+ */
 public class ShowMap extends Activity {
+	
+	/** The Constant PROGRESS_DIALOG. */
 	private static final int PROGRESS_DIALOG = 1;
+	
+	/** The web view. */
 	private MapWebView webView;
 
-	/** Called when the activity is first created. */
+	/**
+	 * Called when the activity is first created.
+	 *
+	 * @param savedInstanceState the saved instance state
+	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		try {
@@ -37,6 +50,10 @@ public class ShowMap extends Activity {
 		}
 	}
 
+	
+	/**
+	 * Initializes location listener to update the positions of the user.
+	 */
 	private void initializeLocationListener() {
 		((LocationManager) getSystemService(Context.LOCATION_SERVICE))
 		.requestLocationUpdates(LocationManager.GPS_PROVIDER,
@@ -64,7 +81,7 @@ public class ShowMap extends Activity {
 					public void onLocationChanged(Location location) {
 						try{
 							webView.setCurrentLocation(new GPSPoint(location.getLatitude(), location
-									.getLongitude(), "pozycja", GPSPointClass.Location));
+									.getLongitude(), "position", GPSPointClass.Location));
 						}
 						catch(Exception e){
 							
@@ -73,6 +90,10 @@ public class ShowMap extends Activity {
 				});
 		
 	}
+	
+	/**
+	 * Initializes map view (loads the appropriate map using the map name stored in the intent).
+	 */
 	private void initializeMapView() {
 		try {
 			Intent intent = getIntent();
@@ -89,12 +110,19 @@ public class ShowMap extends Activity {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.show_menu, menu);
 		return true;
 	};
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -117,6 +145,9 @@ public class ShowMap extends Activity {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateDialog(int)
+	 */
 	@Override
 	protected android.app.Dialog onCreateDialog(int id) {
 		switch (id) {
@@ -131,6 +162,10 @@ public class ShowMap extends Activity {
 		}
 	}
 
+	/**
+	 * If there is an internet connection downloads xml with map description and extracts restaurants from it.
+	 * The information is saved for later.
+	 */
 	private void downloadMapInfo() {
 		final Handler handler = new Handler() {
 			@Override
