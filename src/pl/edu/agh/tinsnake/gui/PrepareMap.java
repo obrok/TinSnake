@@ -194,7 +194,7 @@ public class PrepareMap extends Activity implements OnTouchListener,
 			@Override
 			public void run() {
 				Log.d("SaveMap", "about to save");
-				Map map = new Map(name, coordinates.toBoundingBox(zoom), 3);
+				Map map = new Map(name, coordinates.toBoundingBox(zoom), 2);
 				
 				Message message = new Message();
 				Bundle bundle = new Bundle();

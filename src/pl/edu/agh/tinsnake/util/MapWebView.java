@@ -30,7 +30,6 @@ public class MapWebView extends WebView {
 
 	private Map map;
 	private boolean scrollToPreviousPosition = false;
-	private GPSPoint current;
 	private int mapZoom = 1;
 	private int lastX = 0;
 	private int lastY = 0;
@@ -75,6 +74,10 @@ public class MapWebView extends WebView {
 			int y2 = (int)(size.getHeight() * map.getBoundingBox().latToFraction(to.getLat()));
 			
 			canvas.drawLine(x1, y1, x2, y2, paint);
+			
+			if (i+1 == map.getLocationHistory().size()-1){
+				canvas.drawCircle(x2, y2, 20, paint);
+			}
 		}
 	}
 
@@ -197,17 +200,12 @@ public class MapWebView extends WebView {
 			}
 		}
 
-		if (current != null){
-			builder.append(createPoint(current.getLat(), current.getLng(), "rgba(255,0,0,0.5)"));
-		}
-
 		builder.append("</div></body></html>");
 		return builder.toString();
 	}
 
 	public void setCurrentLocation(GPSPoint location) {
 		map.addCurrentLocation(location);
-		current = location;
 		try {
 			MapHelper.saveMap(map);
 		} catch (Exception e) {

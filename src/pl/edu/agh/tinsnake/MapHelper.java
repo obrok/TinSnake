@@ -14,6 +14,7 @@ import java.io.StreamCorruptedException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -167,6 +168,7 @@ public class MapHelper {
 			IOException {
 		File file = new File(getFolderPath(map.getName()) + File.separator
 				+ map.getName() + ".dat");
+		file.delete();
 		saveObject(file, map);
 	}
 
@@ -332,10 +334,12 @@ public class MapHelper {
 		
 		Log.d("SEARCH", "entering");
 		
+		
+		
 		HttpURLConnection connection = null;
 		URL url = new URL(String.format(
 				"http://nominatim.openstreetmap.org/search?q=%s&format=xml",
-				location));
+				URLEncoder.encode(location)));
 		
 		Log.d("SEARCH", url.toString());
 

@@ -2,6 +2,7 @@ package pl.edu.agh.tinsnake.gui;
 
 import pl.edu.agh.tinsnake.GPSPoint;
 import pl.edu.agh.tinsnake.GPSPointClass;
+import pl.edu.agh.tinsnake.Map;
 import pl.edu.agh.tinsnake.MapHelper;
 import pl.edu.agh.tinsnake.util.MapWebView;
 import android.app.Activity;
@@ -22,21 +23,23 @@ import android.widget.Toast;
 
 /**
  * An activity used to display one of the saved maps.
+ * 
  * @author mn
- *
+ * 
  */
 public class ShowMap extends Activity {
-	
+
 	/** The Constant PROGRESS_DIALOG. */
 	private static final int PROGRESS_DIALOG = 1;
-	
+
 	/** The web view. */
 	private MapWebView webView;
 
 	/**
 	 * Called when the activity is first created.
-	 *
-	 * @param savedInstanceState the saved instance state
+	 * 
+	 * @param savedInstanceState
+	 *            the saved instance state
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -50,49 +53,49 @@ public class ShowMap extends Activity {
 		}
 	}
 
-	
 	/**
 	 * Initializes location listener to update the positions of the user.
 	 */
 	private void initializeLocationListener() {
-		((LocationManager) getSystemService(Context.LOCATION_SERVICE))
-		.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				0, 0, new LocationListener() {
-					
+
+		final LocationManager lm = ((LocationManager) getSystemService(Context.LOCATION_SERVICE));
+		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 50,
+				new LocationListener() {
+
 					@Override
-					public void onStatusChanged(String provider, int status, Bundle extras) {
+					public void onStatusChanged(String provider, int status,
+							Bundle extras) {
 						// TODO Auto-generated method stub
 
 					}
-					
+
 					@Override
 					public void onProviderEnabled(String provider) {
 						// TODO Auto-generated method stub
-						
+
 					}
-					
+
 					@Override
 					public void onProviderDisabled(String provider) {
-						// TODO Auto-generated method stub
-						
+						lm.removeUpdates(this);
 					}
-					
+
 					@Override
 					public void onLocationChanged(Location location) {
-						try{
-							webView.setCurrentLocation(new GPSPoint(location.getLatitude(), location
-									.getLongitude(), "position", GPSPointClass.Location));
-						}
-						catch(Exception e){
-							
+						try {
+							webView.setCurrentLocation(new GPSPoint(location
+									.getLatitude(), location.getLongitude(),
+									"position", GPSPointClass.Location));
+						} catch (Exception e) {
+
 						}
 					}
 				});
-		
 	}
-	
+
 	/**
-	 * Initializes map view (loads the appropriate map using the map name stored in the intent).
+	 * Initializes map view (loads the appropriate map using the map name stored
+	 * in the intent).
 	 */
 	private void initializeMapView() {
 		try {
@@ -100,17 +103,23 @@ public class ShowMap extends Activity {
 			String mapName = intent.getStringExtra("mapName");
 
 			webView = ((MapWebView) this.findViewById(R.id.showMap));
-			webView.setMap(MapHelper.loadMap(mapName));
+			
+			Map map = MapHelper.loadMap(mapName);
 			Log.d("ShowMap", "map loaded");
+			webView.setMap(map);
+			Log.d("ShowMap", "map set");
 
 		} catch (Exception e) {
-			Toast.makeText(getApplicationContext(), "Can't show map :(", Toast.LENGTH_SHORT).show();
+			Toast.makeText(getApplicationContext(), "Can't show map :(",
+					Toast.LENGTH_SHORT).show();
 			Log.e("SHOW EXCEPTION", e.getClass().getCanonicalName() + " "
 					+ e.getMessage());
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
@@ -119,8 +128,10 @@ public class ShowMap extends Activity {
 		inflater.inflate(R.menu.show_menu, menu);
 		return true;
 	};
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
@@ -131,7 +142,7 @@ public class ShowMap extends Activity {
 		case R.id.showDownloadInfoMenuItem:
 			downloadMapInfo();
 			return true;
-			
+
 		case R.id.showZoomInMenuItem:
 			webView.zoomIn();
 			return true;
@@ -139,13 +150,15 @@ public class ShowMap extends Activity {
 		case R.id.showZoomOutMenuItem:
 			webView.zoomOut();
 			return true;
-			
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onCreateDialog(int)
 	 */
 	@Override
@@ -163,8 +176,8 @@ public class ShowMap extends Activity {
 	}
 
 	/**
-	 * If there is an internet connection downloads xml with map description and extracts restaurants from it.
-	 * The information is saved for later.
+	 * If there is an internet connection downloads xml with map description and
+	 * extracts restaurants from it. The information is saved for later.
 	 */
 	private void downloadMapInfo() {
 		final Handler handler = new Handler() {
@@ -173,10 +186,13 @@ public class ShowMap extends Activity {
 				dismissDialog(PROGRESS_DIALOG);
 
 				if (!msg.getData().getBoolean("success")) {
-					Toast.makeText(getApplicationContext(), "Can't download map info :(", Toast.LENGTH_SHORT).show();
-				}
-				else {
-					Toast.makeText(getApplicationContext(), "Map info downloaded :)", Toast.LENGTH_SHORT).show();
+					Toast.makeText(getApplicationContext(),
+							"Can't download map info :(", Toast.LENGTH_SHORT)
+							.show();
+				} else {
+					Toast.makeText(getApplicationContext(),
+							"Map info downloaded :)", Toast.LENGTH_SHORT)
+							.show();
 				}
 			}
 		};
@@ -199,6 +215,6 @@ public class ShowMap extends Activity {
 				handler.sendMessage(message);
 			}
 		}).start();
-		
+
 	}
 }
