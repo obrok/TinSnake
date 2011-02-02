@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:title="Zoom in" android:id="@+id/showZoomInMenuItem"/>
-    <item android:title="Zoom out" android:id="@+id/showZoomOutMenuItem"/>
     <item android:title="Download info" android:id="@+id/showDownloadInfoMenuItem"/>
 </menu>

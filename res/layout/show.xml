@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="wrap_content" android:layout_height="wrap_content">
 	<pl.edu.agh.tinsnake.util.MapWebView android:id="@+id/showMap" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" />
-</LinearLayout>
+	<ImageButton
+	    android:id="@+id/showZoomIn" 
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:src="@drawable/zoom_in_button"
+	    android:layout_marginLeft="7dip"
+	    android:layout_marginTop="7dip"
+	    android:background="@null"
+        android:layout_gravity="left|top" />
+   	<ImageButton
+	    android:id="@+id/showZoomOut" 
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:src="@drawable/zoom_out_button"
+	    android:layout_marginLeft="7dip"
+        android:layout_marginTop="35dip"
+        android:background="@null"
+        android:layout_gravity="left|top" />
+</FrameLayout>

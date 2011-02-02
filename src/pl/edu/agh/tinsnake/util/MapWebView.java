@@ -126,11 +126,18 @@ public class MapWebView extends WebView {
 	private void refreshMap(int previousZoom) {
 
 		double scale = (double) mapZoom / (double) previousZoom;
+		
+		double scalingFactor = 0;
+		
+		if (previousZoom < mapZoom){
+			scalingFactor = 0.5; 
+		}
+		if (previousZoom > mapZoom){
+			scalingFactor = -0.25;
+		}
 
-		lastX = (int) (scale * getScrollX() + (getWidth() / 2)
-				* (mapZoom - previousZoom));
-		lastY = (int) (scale * getScrollY() + (getHeight() / 2)
-				* (mapZoom - previousZoom));
+		lastX = (int) (scale * getScrollX()) + (int) (scalingFactor * getWidth());
+		lastY = (int) (scale * getScrollY()) + (int) (scalingFactor * getHeight());
 
 		scrollToPreviousPosition = true;
 

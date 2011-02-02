@@ -19,6 +19,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 /**
@@ -27,7 +29,7 @@ import android.widget.Toast;
  * @author mn
  * 
  */
-public class ShowMap extends Activity {
+public class ShowMap extends Activity implements OnClickListener {
 
 	/** The Constant PROGRESS_DIALOG. */
 	private static final int PROGRESS_DIALOG = 1;
@@ -48,6 +50,8 @@ public class ShowMap extends Activity {
 			setContentView(R.layout.show);
 			initializeMapView();
 			initializeLocationListener();
+			this.findViewById(R.id.showZoomIn).setOnClickListener(this);
+			this.findViewById(R.id.showZoomOut).setOnClickListener(this);
 		} catch (Exception e) {
 			Log.e("ShowMap", e.getClass() + " " + e.getMessage());
 		}
@@ -143,14 +147,6 @@ public class ShowMap extends Activity {
 			downloadMapInfo();
 			return true;
 
-		case R.id.showZoomInMenuItem:
-			webView.zoomIn();
-			return true;
-
-		case R.id.showZoomOutMenuItem:
-			webView.zoomOut();
-			return true;
-
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -216,5 +212,24 @@ public class ShowMap extends Activity {
 			}
 		}).start();
 
+	}
+	
+	@Override
+	public void onClick(View v) {
+		Log.d("BUTTON", "any");
+		switch (v.getId()) {
+		case R.id.showZoomIn:
+			Log.d("BUTTON", "zoom in");
+			webView.zoomIn();
+			break;
+		
+		case R.id.showZoomOut:
+			Log.d("BUTTON", "zoom out");
+			webView.zoomOut();
+			break;
+
+		default:
+			break;
+		}
 	}
 }
