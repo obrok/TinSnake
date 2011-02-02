@@ -23,7 +23,8 @@ public final class R {
         public static final int searchLocationMenuItem=0x7f060007;
         public static final int showButton=0x7f060000;
         public static final int showClearLocationHistoryMenuItem=0x7f06000b;
-        public static final int showDownloadInfoMenuItem=0x7f06000c;
+        public static final int showDownloadInfoMenuItem=0x7f06000d;
+        public static final int showDownloadNextZoomMenuItem=0x7f06000c;
         public static final int showMap=0x7f060004;
         public static final int showZoomIn=0x7f060005;
         public static final int showZoomOut=0x7f060006;

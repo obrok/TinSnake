@@ -136,6 +136,10 @@ public class Map implements Serializable {
 	 *            the height
 	 */
 	public void setMapSize(int zoom, int width, int height) {
+		if (zoom > maxZoom) {
+			maxZoom = zoom;
+		}
+
 		mapSizes.add(new MapSize(width, height));
 	}
 

@@ -87,23 +87,34 @@ public class MapHelper {
 		Log.d("DOWNLOAD", "max zoom: " + map.getMaxZoom());
 
 		for (int zoom = 1; zoom <= map.getMaxZoom(); zoom++) {
-			int width = 0;
-			int height = 0;
-			
-			for (int i = 0; i < zoom; i++) {
-				for (int j = 0; j < zoom; j++) {
-					Log.d("DOWNLOAD", "downloading map image");
-					Bitmap bitmap = downloadMapImage(map, zoom, i, j);
-					width += bitmap.getWidth();
-					height += bitmap.getHeight();
-				}
-			}
-			width /= zoom;
-			height /= zoom;
-			map.setMapSize(zoom, width, height);
-			Log.d("SaveMap", "w " + width + " height " + height);
-			Log.d("SaveMap", "map " + zoom + " saved");
+			downloadZoomLevel(map, zoom);
 		}
+	}
+	
+	public static void downloadNextZoomLevel(Map map) throws FileNotFoundException, IOException{
+		downloadZoomLevel(map, map.getMaxZoom()+1);
+	}
+
+	private static void downloadZoomLevel(Map map, int zoom)
+			throws FileNotFoundException, IOException {
+		int width = 0;
+		int height = 0;
+		
+		zoom = (int)Math.pow(2, (zoom - 1));
+		
+		for (int i = 0; i < zoom; i++) {
+			for (int j = 0; j < zoom; j++) {
+				Log.d("DOWNLOAD", "downloading map image");
+				Bitmap bitmap = downloadMapImage(map, zoom, i, j);
+				width += bitmap.getWidth();
+				height += bitmap.getHeight();
+			}
+		}
+		width /= zoom;
+		height /= zoom;
+		map.setMapSize(zoom, width, height);
+		Log.d("SaveMap", "w " + width + " height " + height);
+		Log.d("SaveMap", "map " + zoom + " saved");
 	}
 
 	/**
@@ -136,24 +147,37 @@ public class MapHelper {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private static Bitmap downloadMapImage(final Map map, final int zoom,
-			final int i, final int j) throws FileNotFoundException, IOException {
+			final int i, final int j) throws IOException {
 		String filepath = getMapImageFilePath(map, zoom, i, j);
 		Log.d("DOWNLOAD", filepath);
-		File file = new File(filepath);
-
-		StreamUtil.safelyAcccess(new FileOutputStream(file),
-				new CloseableUser() {
-					@Override
-					public void performAction(Closeable stream)
-							throws IOException {
-						BoundingBox current = map.getBoundingBox()
-								.getSubBoundingBox(zoom, i, j);
-						toSave = downloadBitmap(current.toOSMString(1000));
-
-						toSave.compress(Bitmap.CompressFormat.JPEG, 90,
-								(OutputStream) stream);
-					}
-				});
+		
+		final File file = new File(filepath);
+		
+		if (!(file.exists() && file.length() > 0)){
+			StreamUtil.safelyAcccess(new FileOutputStream(file),
+					new CloseableUser() {
+						@Override
+						public void performAction(Closeable stream)
+								throws IOException {
+							
+							try {
+								BoundingBox current = map.getBoundingBox()
+									.getSubBoundingBox(zoom, i, j);
+								toSave = downloadBitmap(current.toOSMString(1000));
+	
+								toSave.compress(Bitmap.CompressFormat.JPEG, 90,
+									(OutputStream) stream);	
+							}
+							catch (FileNotFoundException e){
+								file.delete();
+								throw e;
+							}
+						}
+					});
+		} else {
+			Log.d("DOWNLOAD", "skipping already downloaded file");
+			toSave = BitmapFactory.decodeFile(file.getAbsolutePath());
+		}
 		return toSave;
 	}
 

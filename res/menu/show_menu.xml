@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item android:title="Clear history" android:id="@+id/showClearLocationHistoryMenuItem"/>
+	<item android:title="Download next zoom level" android:id="@+id/showDownloadNextZoomMenuItem"/>
     <item android:title="Download info" android:id="@+id/showDownloadInfoMenuItem"/>
 </menu>

@@ -6,6 +6,7 @@ import pl.edu.agh.tinsnake.Map;
 import pl.edu.agh.tinsnake.MapHelper;
 import pl.edu.agh.tinsnake.util.MapWebView;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -33,6 +34,7 @@ public class ShowMap extends Activity implements OnClickListener {
 
 	/** The Constant PROGRESS_DIALOG. */
 	private static final int PROGRESS_DIALOG = 1;
+	protected static final int FAILURE_DIALOG = 0;
 
 	/** The web view. */
 	private MapWebView webView;
@@ -155,6 +157,9 @@ public class ShowMap extends Activity implements OnClickListener {
 				return false;
 			} 
 			return true;
+		case R.id.showDownloadNextZoomMenuItem:
+			downloadNextZoomLevel();
+			return true;
 		case R.id.showDownloadInfoMenuItem:
 			downloadMapInfo();
 			return true;
@@ -162,6 +167,39 @@ public class ShowMap extends Activity implements OnClickListener {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void downloadNextZoomLevel() {
+		final Handler handler = new Handler() {
+			@Override
+			public void handleMessage(android.os.Message msg) {
+				dismissDialog(PROGRESS_DIALOG);
+
+				if (!msg.getData().getBoolean("success")) {
+					showDialog(FAILURE_DIALOG);
+				}
+			}
+		};
+
+		showDialog(PROGRESS_DIALOG);
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {			
+				Message message = new Message();
+				Bundle bundle = new Bundle();
+				message.setData(bundle);
+				try {
+					MapHelper.downloadNextZoomLevel(map);
+					MapHelper.saveMap(map);
+					bundle.putBoolean("success", true);
+				} catch (Exception e) {
+					Log.e("SaveMap", e.getClass() + " " + e.getMessage());
+					bundle.putBoolean("success", false);
+				}
+				handler.sendMessage(message);
+			}
+		}).start();
 	}
 
 	/*
@@ -177,6 +215,12 @@ public class ShowMap extends Activity implements OnClickListener {
 			progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			progressDialog.setMessage("Loading...");
 			return progressDialog;
+		case FAILURE_DIALOG:
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage(
+					"Can't connect to the server. Try again in a few minutes.")
+					.setCancelable(false).setPositiveButton("OK", null);
+			return builder.create();
 
 		default:
 			return null;

@@ -133,19 +133,11 @@ public class MapWebView extends WebView {
 
 	private void refreshMap(int previousZoom) {
 
-		double scale = (double) mapZoom / (double) previousZoom;
+		MapSize previousSize = map.getMapSize(previousZoom);
+		final MapSize currentSize = map.getMapSize(mapZoom);
 		
-		double scalingFactor = 0;
-		
-		if (previousZoom < mapZoom){
-			scalingFactor = 0.5; 
-		}
-		if (previousZoom > mapZoom){
-			scalingFactor = -0.25;
-		}
-
-		lastX = (int) (scale * getScrollX()) + (int) (scalingFactor * getWidth());
-		lastY = (int) (scale * getScrollY()) + (int) (scalingFactor * getHeight());
+		final double xPercentage = (double) (getScrollX() + getWidth() / 2) / (double) previousSize.getWidth();
+		final double yPercentage = (double) (getScrollY() + getHeight() / 2) / (double) previousSize.getHeight();
 
 		scrollToPreviousPosition = true;
 
@@ -154,7 +146,10 @@ public class MapWebView extends WebView {
 			@Override
 			public void onNewPicture(WebView arg0, Picture arg1) {
 				if (scrollToPreviousPosition) {
-					scrollTo(lastX, lastY);
+					scrollTo(
+							(int)(xPercentage * (double)currentSize.getWidth()) - getWidth() / 2,
+							(int)(yPercentage * (double)currentSize.getHeight()) - getHeight() / 2
+					);
 					scrollToPreviousPosition = false;
 					Log.d("SCROLLING TO", lastX + " " + lastY);
 				}
@@ -190,17 +185,18 @@ public class MapWebView extends WebView {
 	}
 
 	private String generateHtml() {
+		int zoom = (int)Math.pow(2, (mapZoom - 1));
 		StringBuilder builder = new StringBuilder();
 		builder
 				.append(String
 						.format(
 								"<html><body style='margin: 0px'><div style='position: absolute; width: %dpx'>",
-								mapZoom * 1000));
+								zoom * 1000));
 
-		for (int j = mapZoom - 1; j >= 0; j--) {
-			for (int i = 0; i < mapZoom; i++) {
+		for (int j = zoom - 1; j >= 0; j--) {
+			for (int i = 0; i < zoom; i++) {
 				String imgSrc = "file://"
-						+ MapHelper.getMapImageFilePath(map, mapZoom, i, j);
+						+ MapHelper.getMapImageFilePath(map, zoom, i, j);
 				builder.append(String.format(
 						"<img style='margin: 0px; padding: 0px;' src=\"%s\"/>",
 						imgSrc));
