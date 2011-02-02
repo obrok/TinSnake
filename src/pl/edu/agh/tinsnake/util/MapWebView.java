@@ -45,6 +45,8 @@ public class MapWebView extends WebView {
 
 	@Override
 	public boolean zoomIn() {
+		Log.d("ZOOM IN", "max " + map.getMaxZoom());
+		Log.d("ZOOM IN", "cur " + mapZoom);
 		if (mapZoom < map.getMaxZoom()) {
 			mapZoom++;
 			refreshMap(mapZoom - 1);

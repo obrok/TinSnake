@@ -40,16 +40,6 @@ public class Map implements Serializable {
 	}
 
 	/**
-	 * Sets the max zoom.
-	 * 
-	 * @param maxZoom
-	 *            the new max zoom
-	 */
-	public void setMaxZoom(int maxZoom) {
-		this.maxZoom = maxZoom;
-	}
-
-	/**
 	 * Gets the points located on the map (excluding location history).
 	 * 
 	 * @return the points

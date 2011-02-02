@@ -95,12 +95,12 @@ public class MapHelper {
 		downloadZoomLevel(map, map.getMaxZoom()+1);
 	}
 
-	private static void downloadZoomLevel(Map map, int zoom)
+	private static void downloadZoomLevel(Map map, int orgZoom)
 			throws FileNotFoundException, IOException {
 		int width = 0;
 		int height = 0;
 		
-		zoom = (int)Math.pow(2, (zoom - 1));
+		int zoom = (int)Math.pow(2, (orgZoom - 1));
 		
 		for (int i = 0; i < zoom; i++) {
 			for (int j = 0; j < zoom; j++) {
@@ -110,11 +110,13 @@ public class MapHelper {
 				height += bitmap.getHeight();
 			}
 		}
+		
 		width /= zoom;
 		height /= zoom;
-		map.setMapSize(zoom, width, height);
+		
+		map.setMapSize(orgZoom, width, height);
 		Log.d("SaveMap", "w " + width + " height " + height);
-		Log.d("SaveMap", "map " + zoom + " saved");
+		Log.d("SaveMap", "map " + orgZoom + " saved");
 	}
 
 	/**
