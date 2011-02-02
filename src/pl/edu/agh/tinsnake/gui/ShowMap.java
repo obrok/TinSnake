@@ -37,6 +37,8 @@ public class ShowMap extends Activity implements OnClickListener {
 	/** The web view. */
 	private MapWebView webView;
 
+	private Map map;
+
 	/**
 	 * Called when the activity is first created.
 	 * 
@@ -108,7 +110,7 @@ public class ShowMap extends Activity implements OnClickListener {
 
 			webView = ((MapWebView) this.findViewById(R.id.showMap));
 			
-			Map map = MapHelper.loadMap(mapName);
+			map = MapHelper.loadMap(mapName);
 			Log.d("ShowMap", "map loaded");
 			webView.setMap(map);
 			Log.d("ShowMap", "map set");
@@ -143,6 +145,16 @@ public class ShowMap extends Activity implements OnClickListener {
 
 		// Handle item selection
 		switch (item.getItemId()) {
+		case R.id.showClearLocationHistoryMenuItem:
+			map.clearLocationHistory();
+			try {
+				MapHelper.saveMap(map);
+			} catch (Exception e) {
+				Log.e("CLEAR LOCATION HISTORY", e.getClass().getCanonicalName() + " "
+						+ e.getMessage());
+				return false;
+			} 
+			return true;
 		case R.id.showDownloadInfoMenuItem:
 			downloadMapInfo();
 			return true;

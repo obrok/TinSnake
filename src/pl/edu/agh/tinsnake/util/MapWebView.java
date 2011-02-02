@@ -59,26 +59,34 @@ public class MapWebView extends WebView {
 		paint.setColor(Color.RED);
 		paint.setAlpha(70);
 		super.onDraw(canvas);
-		
-		MapSize size = map.getMapSize(mapZoom);
-		Log.d("DRAWING", size.getWidth() + " " + size.getHeight());
 
 		for (int i = 0; i < map.getLocationHistory().size() - 1; i++) {
 			GPSPoint from = map.getLocationHistory().get(i);
 			GPSPoint to = map.getLocationHistory().get(i+1);
 			
-			int x1 = (int)(size.getWidth() * map.getBoundingBox().lngToFraction(from.getLng()));
-			int y1 = (int)(size.getHeight() * map.getBoundingBox().latToFraction(from.getLat()));
+			int x1 = lngToPixel(from.getLng());
+			int y1 = latToPixel(from.getLat());
 			
-			int x2 = (int)(size.getWidth() * map.getBoundingBox().lngToFraction(to.getLng()));
-			int y2 = (int)(size.getHeight() * map.getBoundingBox().latToFraction(to.getLat()));
+			int x2 = lngToPixel(to.getLng());
+			int y2 = latToPixel(to.getLat());
 			
 			canvas.drawLine(x1, y1, x2, y2, paint);
-			
-			if (i+1 == map.getLocationHistory().size()-1){
-				canvas.drawCircle(x2, y2, 20, paint);
-			}
 		}
+		
+		GPSPoint current = map.getCurrentLocation();
+		if (current != null){
+			canvas.drawCircle(lngToPixel(current.getLng()), latToPixel(current.getLat()), 20, paint);
+		}
+	}
+	
+	private int lngToPixel(double lng){
+		MapSize size = map.getMapSize(mapZoom);
+		return (int)(size.getWidth() * map.getBoundingBox().lngToFraction(lng));
+	}
+	
+	private int latToPixel(double lat){
+		MapSize size = map.getMapSize(mapZoom);
+		return (int)(size.getHeight() * map.getBoundingBox().latToFraction(lat));
 	}
 
 	@Override
