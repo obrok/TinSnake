@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -29,16 +30,20 @@ import android.widget.Toast;
  * @author mn
  * 
  */
-public class ShowMap extends Activity implements OnClickListener {
+public class ShowMap extends Activity implements OnClickListener, LocationListener {
 
 	/** The Constant PROGRESS_DIALOG. */
 	private static final int PROGRESS_DIALOG = 1;
 	protected static final int FAILURE_DIALOG = 0;
+	private static final int LOCATION_SETTINGS_REQUEST_CODE = 0;
 
+	private SharedPreferences locationSettings;
+	
 	/** The web view. */
 	private MapWebView webView;
 
 	private Map map;
+	private LocationManager locationManager;
 
 	/**
 	 * Called when the activity is first created.
@@ -51,10 +56,11 @@ public class ShowMap extends Activity implements OnClickListener {
 		try {
 			super.onCreate(savedInstanceState);
 			setContentView(R.layout.show);
-			initializeMapView();
-			initializeLocationListener();
 			this.findViewById(R.id.showZoomIn).setOnClickListener(this);
 			this.findViewById(R.id.showZoomOut).setOnClickListener(this);
+			initializeMapView();
+			locationSettings = getSharedPreferences(LocationSettings.SETTINGS_NAME, 0);
+			initializeLocationListener();
 		} catch (Exception e) {
 			Log.e("ShowMap", e.getClass() + " " + e.getMessage());
 		}
@@ -64,38 +70,8 @@ public class ShowMap extends Activity implements OnClickListener {
 	 * Initializes location listener to update the positions of the user.
 	 */
 	private void initializeLocationListener() {
-
-		final LocationManager lm = ((LocationManager) getSystemService(Context.LOCATION_SERVICE));
-		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 50,
-				new LocationListener() {
-
-					@Override
-					public void onStatusChanged(String provider, int status,
-							Bundle extras) {
-						// TODO Auto-generated method stub
-
-					}
-
-					@Override
-					public void onProviderEnabled(String provider) {
-						// TODO Auto-generated method stub
-
-					}
-
-					@Override
-					public void onProviderDisabled(String provider) {
-						lm.removeUpdates(this);
-					}
-
-					@Override
-					public void onLocationChanged(Location location) {
-						try {
-							webView.setCurrentLocation(new GPSPoint(location));
-						} catch (Exception e) {
-
-						}
-					}
-				});
+		locationManager = ((LocationManager) getSystemService(Context.LOCATION_SERVICE));
+		refreshLocationSettings();
 	}
 
 	/**
@@ -161,11 +137,46 @@ public class ShowMap extends Activity implements OnClickListener {
 			downloadMapInfo();
 			return true;
 		case R.id.showSettings:
-			startActivity(new Intent(getApplicationContext(), LocationSettings.class));
+			Intent intent = new Intent(getApplicationContext(), LocationSettings.class);
+			
+			startActivityForResult(intent, LOCATION_SETTINGS_REQUEST_CODE);
 			return true;
 
 		default:
 			return super.onOptionsItemSelected(item);
+		}
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		switch (requestCode) {
+		case LOCATION_SETTINGS_REQUEST_CODE:
+			if (resultCode == 0) {
+				refreshLocationSettings();
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	private void refreshLocationSettings() {
+		Log.d("LOCATION SETTINGS", "refreshing");
+		locationManager.removeUpdates(this);
+		Log.d("LOCATION SETTINGS", "updates removed");
+		
+		if (locationSettings.getBoolean(LocationSettings.TRACKING, LocationSettings.TRACKINGDefault)){
+			Log.d("LOCATION SETTINGS", "reqistering");
+			boolean gps_provider = locationSettings.getBoolean(LocationSettings.GPS, LocationSettings.GPSDefault);
+			String provider = gps_provider ? LocationManager.GPS_PROVIDER : LocationManager.NETWORK_PROVIDER;
+			Log.d("LOCATION SETTINGS", "got provider");
+			int seconds = locationSettings.getInt(LocationSettings.SECONDS, LocationSettings.SECONDSDefault);
+			int meters = locationSettings.getInt(LocationSettings.METERS, LocationSettings.METERSDefault);
+			Log.d("LOCATION SETTINGS", "got ints");
+			locationManager.requestLocationUpdates(provider, seconds*1000, meters, this);
 		}
 	}
 
@@ -286,6 +297,36 @@ public class ShowMap extends Activity implements OnClickListener {
 
 		default:
 			break;
+		}
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status,
+			Bundle extras) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		refreshLocationSettings();
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		try {
+			locationManager.removeUpdates(this);
+		} catch (Exception e) {
+
+		}		
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		try {
+			webView.setCurrentLocation(new GPSPoint(location));
+		} catch (Exception e) {
+
 		}
 	}
 }

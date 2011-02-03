@@ -32,14 +32,21 @@ public class LocationSettings extends Activity implements OnClickListener {
 		metersEditText = (EditText)findViewById(R.id.editMeters);
 		
 		loadSettings();
+		
+		setResult(1);
 	}
 	
-	private final String SETTINGS_NAME = "location_settings";
-	private final String TRACKING = "tracking";
-	private final String GPS = "gps";
-	private final String NETWORK = "network";
-	private final String SECONDS = "seconds";
-	private final String METERS = "meters";
+	public static final String TRACKING = "tracking";
+	public static final String GPS = "gps";
+	public static final String NETWORK = "network";
+	public static final String SECONDS = "seconds";
+	public static final String METERS = "meters";
+	public static final boolean GPSDefault = true;
+	public static final boolean NETWORKDefault = false;
+	public static final boolean TRACKINGDefault = true;
+	public static final int SECONDSDefault = 60;
+	public static final int METERSDefault = 100;
+	public static final String SETTINGS_NAME = null;
 	
 	private CheckBox trackingCheckBox;
 	private RadioButton gpsRadioButton;
@@ -52,12 +59,12 @@ public class LocationSettings extends Activity implements OnClickListener {
 	private void loadSettings() {
 		settings = getSharedPreferences(SETTINGS_NAME, 0);
 		
-		trackingCheckBox.setChecked(settings.getBoolean(TRACKING, true));
-		gpsRadioButton.setChecked(settings.getBoolean(GPS, true));
-		networkRadioButton.setChecked(settings.getBoolean(NETWORK, false));
+		trackingCheckBox.setChecked(settings.getBoolean(TRACKING, TRACKINGDefault));
+		gpsRadioButton.setChecked(settings.getBoolean(GPS, GPSDefault));
+		networkRadioButton.setChecked(settings.getBoolean(NETWORK, NETWORKDefault));
 		
-		secondsEditText.setText(String.format("%d", settings.getInt(SECONDS, 60)));
-		metersEditText.setText(String.format("%d", settings.getInt(METERS, 100)));
+		secondsEditText.setText(String.format("%d", settings.getInt(SECONDS, SECONDSDefault)));
+		metersEditText.setText(String.format("%d", settings.getInt(METERS, METERSDefault)));
 	}
 	
 	private void saveSettings() {
@@ -85,6 +92,7 @@ public class LocationSettings extends Activity implements OnClickListener {
 
 			try{
 				saveSettings();
+				setResult(0);
 				finish();
 			}
 			catch (Exception e){
