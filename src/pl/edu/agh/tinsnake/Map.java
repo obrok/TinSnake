@@ -2,6 +2,8 @@ package pl.edu.agh.tinsnake;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -22,7 +24,7 @@ public class Map implements Serializable {
 	private BoundingBox boundingBox;
 
 	/** The points on the map. */
-	private List<GPSPoint> points;
+	private List<MapPoint> points;
 
 	/** The location history. */
 	private List<GPSPoint> locationHistory;
@@ -44,7 +46,7 @@ public class Map implements Serializable {
 	 * 
 	 * @return the points
 	 */
-	public List<GPSPoint> getPoints() {
+	public List<MapPoint> getPoints() {
 		return points;
 	}
 
@@ -54,6 +56,14 @@ public class Map implements Serializable {
 	 * @return the location history
 	 */
 	public List<GPSPoint> getLocationHistory() {
+		Comparator<GPSPoint> c = new Comparator<GPSPoint>() {
+
+			@Override
+			public int compare(GPSPoint object1, GPSPoint object2) {
+				return (int)(object1.getDate() - object2.getDate());
+			}
+		};
+		Collections.sort(locationHistory, c );
 		return locationHistory;
 	}
 
@@ -63,7 +73,7 @@ public class Map implements Serializable {
 	 * @param points
 	 *            the new points
 	 */
-	public void setPoints(List<GPSPoint> points) {
+	public void setPoints(List<MapPoint> points) {
 		this.points = points;
 	}
 
@@ -97,7 +107,7 @@ public class Map implements Serializable {
 	 */
 	public Map(String name, BoundingBox boundingBox, int maxZoom) {
 		this.name = name;
-		points = new ArrayList<GPSPoint>();
+		points = new ArrayList<MapPoint>();
 		locationHistory = new ArrayList<GPSPoint>();
 		mapSizes = new ArrayList<MapSize>();
 		this.boundingBox = boundingBox;
@@ -190,7 +200,7 @@ public class Map implements Serializable {
 		}
 	}
 
-	public GPSPoint getCurrentLocation() {
+	public MapPoint getCurrentLocation() {
 		if (locationHistory.size() > 0) {
 			return locationHistory.get(locationHistory.size() - 1);
 		}

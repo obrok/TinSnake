@@ -2,11 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
-	
+
 	<Button android:id="@+id/showButton" android:layout_width="wrap_content"
+
 		android:layout_height="wrap_content" android:text="Show a map" />
-	
+
 	<Button android:id="@+id/prepareButton" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:text="Prepare a map" />
-	
+
 </LinearLayout>

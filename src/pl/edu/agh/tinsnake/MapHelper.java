@@ -255,7 +255,7 @@ public class MapHelper {
 	 * @param is the input stream
 	 * @return the list
 	 */
-	private static List<GPSPoint> loadPoints(InputStream is) {
+	private static List<MapPoint> loadPoints(InputStream is) {
 		try {
 			Log.d("POINT", "starting");
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -264,7 +264,7 @@ public class MapHelper {
 			Document doc = db.parse(is);
 			NodeList nodeList = doc.getElementsByTagName("tag");
 
-			List<GPSPoint> result = new ArrayList<GPSPoint>();
+			List<MapPoint> result = new ArrayList<MapPoint>();
 
 			int i = 0;
 			Log.d("POINT", "length " + nodeList.getLength());
@@ -295,8 +295,7 @@ public class MapHelper {
 
 				if (key.getNodeValue().equals("amenity")
 						&& value.getNodeValue().equals("restaurant")) {
-					result.add(new GPSPoint(lat, lon, "",
-							GPSPointClass.Restaurant));
+					result.add(new MapPoint(lat, lon, "restaurant"));
 					Log.d("POINT", "parsed");
 				}
 			}
@@ -305,7 +304,7 @@ public class MapHelper {
 			Log.e("SHOW EXCEPTION", e.getClass().getCanonicalName() + " "
 					+ e.getMessage());
 		}
-		return new ArrayList<GPSPoint>();
+		return new ArrayList<MapPoint>();
 	}
 
 	/**
@@ -316,7 +315,7 @@ public class MapHelper {
 	 */
 	public static void downloadMapInfo(Map map) throws IOException {
 		InputStream is = downloadXML(map.getBoundingBox());
-		List<GPSPoint> points = loadPoints(is);
+		List<MapPoint> points = loadPoints(is);
 		map.setPoints(points);
 		saveMap(map);
 	}

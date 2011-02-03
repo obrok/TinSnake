@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-	<item android:title="Clear history" android:id="@+id/showClearLocationHistoryMenuItem"/>
-	<item android:title="Get next zoom level" android:id="@+id/showDownloadNextZoomMenuItem"/>
-    <item android:title="Get info" android:id="@+id/showDownloadInfoMenuItem"/>
+    <item android:id="@+id/submenuLocation"
+        android:title="Location...">
+
+        <menu>        
+			<item android:id="@+id/showSave"
+                android:title="Save log" />
+            <item android:id="@+id/showLoad"
+                android:title="Load log" />
+            <item android:id="@+id/showSettings"
+                android:title="Settings..." />
+            <item android:id="@+id/showClear"
+                android:title="Clear log" />
+        </menu>
+
+    </item>
+    <item android:id="@+id/submenuGet"
+        android:title="Get...">
+
+        <menu>        
+            <item android:id="@+id/showNextZoom"
+                android:title="Next zoom level" />
+            <item android:id="@+id/showInfo"
+                android:title="Info" />
+        </menu>
+
+    </item>
 </menu>

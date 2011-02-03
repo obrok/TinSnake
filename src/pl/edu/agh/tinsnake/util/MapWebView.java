@@ -1,6 +1,7 @@
 package pl.edu.agh.tinsnake.util;
 
 import pl.edu.agh.tinsnake.GPSPoint;
+import pl.edu.agh.tinsnake.MapPoint;
 import pl.edu.agh.tinsnake.Map;
 import pl.edu.agh.tinsnake.MapHelper;
 import pl.edu.agh.tinsnake.Map.MapSize;
@@ -63,8 +64,8 @@ public class MapWebView extends WebView {
 		super.onDraw(canvas);
 
 		for (int i = 0; i < map.getLocationHistory().size() - 1; i++) {
-			GPSPoint from = map.getLocationHistory().get(i);
-			GPSPoint to = map.getLocationHistory().get(i+1);
+			MapPoint from = map.getLocationHistory().get(i);
+			MapPoint to = map.getLocationHistory().get(i+1);
 			
 			int x1 = lngToPixel(from.getLng());
 			int y1 = latToPixel(from.getLat());
@@ -75,7 +76,7 @@ public class MapWebView extends WebView {
 			canvas.drawLine(x1, y1, x2, y2, paint);
 		}
 		
-		GPSPoint current = map.getCurrentLocation();
+		MapPoint current = map.getCurrentLocation();
 		if (current != null){
 			canvas.drawCircle(lngToPixel(current.getLng()), latToPixel(current.getLat()), 20, paint);
 		}
@@ -207,7 +208,7 @@ public class MapWebView extends WebView {
 		}
 
 		if (map.getPoints() != null) {
-			for (GPSPoint point : map.getPoints()) {
+			for (MapPoint point : map.getPoints()) {
 				builder.append(createPoint(point.getLat(), point.getLng(),
 						"rgba(0,0,255,0.5)"));
 			}

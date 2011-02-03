@@ -13,6 +13,7 @@
         </activity>
         <activity android:name=".PrepareMap" android:screenOrientation="portrait" />
         <activity android:name=".ShowMap" android:screenOrientation="portrait" />
+        <activity android:name=".LocationSettings" android:screenOrientation="portrait" />
 
 </application>
     <uses-sdk android:minSdkVersion="7" />

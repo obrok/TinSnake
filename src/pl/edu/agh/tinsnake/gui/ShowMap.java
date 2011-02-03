@@ -1,7 +1,6 @@
 package pl.edu.agh.tinsnake.gui;
 
 import pl.edu.agh.tinsnake.GPSPoint;
-import pl.edu.agh.tinsnake.GPSPointClass;
 import pl.edu.agh.tinsnake.Map;
 import pl.edu.agh.tinsnake.MapHelper;
 import pl.edu.agh.tinsnake.util.MapWebView;
@@ -91,9 +90,7 @@ public class ShowMap extends Activity implements OnClickListener {
 					@Override
 					public void onLocationChanged(Location location) {
 						try {
-							webView.setCurrentLocation(new GPSPoint(location
-									.getLatitude(), location.getLongitude(),
-									"position", GPSPointClass.Location));
+							webView.setCurrentLocation(new GPSPoint(location));
 						} catch (Exception e) {
 
 						}
@@ -147,7 +144,7 @@ public class ShowMap extends Activity implements OnClickListener {
 
 		// Handle item selection
 		switch (item.getItemId()) {
-		case R.id.showClearLocationHistoryMenuItem:
+		case R.id.showClear:
 			map.clearLocationHistory();
 			try {
 				MapHelper.saveMap(map);
@@ -157,11 +154,14 @@ public class ShowMap extends Activity implements OnClickListener {
 				return false;
 			} 
 			return true;
-		case R.id.showDownloadNextZoomMenuItem:
+		case R.id.showNextZoom:
 			downloadNextZoomLevel();
 			return true;
-		case R.id.showDownloadInfoMenuItem:
+		case R.id.showInfo:
 			downloadMapInfo();
+			return true;
+		case R.id.showSettings:
+			startActivity(new Intent(getApplicationContext(), LocationSettings.class));
 			return true;
 
 		default:

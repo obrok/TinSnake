@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" 
+	android:layout_width="fill_parent"
+	android:gravity="center_horizontal" 
+	android:layout_height="fill_parent">
+
+	<CheckBox 
+		android:text="Track location" 
+		android:id="@+id/trackingCheckBox"
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content" />
+	<TextView 
+		android:text="Select source:" 
+		android:id="@+id/TextView01"
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content" />
+	<RadioGroup 
+		android:id="@+id/RadioGroup01"
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content">
+		<RadioButton 
+			android:text="GPS" 
+			android:id="@+id/gpsRadioButton"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" />
+		<RadioButton 
+			android:text="Network"
+			android:id="@+id/networkRadioButton"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" />
+	</RadioGroup>
+	
+	<LinearLayout
+		android:id="@+id/LinearLayout01"
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+		<TextView 
+			android:layout_margin="10dip"
+			android:text="Seconds:" 
+			android:id="@+id/secondsTextView"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" />
+		<EditText 
+			android:layout_margin="10dip"
+			android:id="@+id/editSeconds"
+			android:layout_height="wrap_content" 
+			android:layout_width="fill_parent" />
+	</LinearLayout>
+	<LinearLayout
+		android:id="@+id/LinearLayout01"
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+		<TextView 
+			android:layout_margin="10dip"
+			android:text="Meters:" 
+			android:id="@+id/metersTextView"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" />
+		<EditText 
+			android:layout_margin="10dip"
+			android:id="@+id/editMeters"
+			android:layout_height="wrap_content" 
+			android:layout_width="fill_parent" />
+	</LinearLayout>
+
+	<Button 
+		android:layout_height="wrap_content" 
+		android:id="@+id/settingsSave"
+		android:layout_width="wrap_content" 
+		android:text="Save settings" />
+</LinearLayout>
