@@ -33,7 +33,10 @@ import pl.edu.agh.tinsnake.util.CloseableUser;
 import pl.edu.agh.tinsnake.util.StreamUtil;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 /**
@@ -78,24 +81,33 @@ public class MapHelper {
 	 * @throws FileNotFoundException the file not found exception
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void downloadMapImages(Map map) throws FileNotFoundException,
+	public static void downloadMapImages(Map map, Handler handler) throws FileNotFoundException,
 			IOException {
 		Log.d("DOWNLOAD", "about to download");
 		File dir = new File(getFolderPath(map.getName()));
 		dir.mkdirs();
 
 		Log.d("DOWNLOAD", "max zoom: " + map.getMaxZoom());
-
+		
+		int imagesCount = 0;
+		
 		for (int zoom = 1; zoom <= map.getMaxZoom(); zoom++) {
-			downloadZoomLevel(map, zoom);
+			imagesCount += Math.pow(Math.pow(2, zoom - 1), 2);
+		}
+		
+		Log.d("DOWNLOAD", "COUNT: " + imagesCount);
+		int currentImagesCount = 0;
+		
+		for (int zoom = 1; zoom <= map.getMaxZoom(); zoom++) {
+			currentImagesCount = downloadZoomLevel(map, zoom, handler, imagesCount, currentImagesCount);
 		}
 	}
 	
 	public static void downloadNextZoomLevel(Map map) throws FileNotFoundException, IOException{
-		downloadZoomLevel(map, map.getMaxZoom()+1);
+		downloadZoomLevel(map, map.getMaxZoom()+1, null, 0, 0);
 	}
 
-	private static void downloadZoomLevel(Map map, int orgZoom)
+	private static int downloadZoomLevel(Map map, int orgZoom, Handler handler, int imagesCount, int currentImagesCount)
 			throws FileNotFoundException, IOException {
 		int width = 0;
 		int height = 0;
@@ -108,6 +120,17 @@ public class MapHelper {
 				Bitmap bitmap = downloadMapImage(map, zoom, i, j);
 				width += bitmap.getWidth();
 				height += bitmap.getHeight();
+				
+				Message msg = handler.obtainMessage();
+				
+				currentImagesCount++;
+				
+                Bundle b = new Bundle();
+                b.putDouble("total", (double)currentImagesCount / (double)imagesCount);
+                b.putBoolean("success", true);
+                msg.setData(b);
+                handler.sendMessage(msg);
+                Log.d("DOWNLOADED", "COUNT: " + currentImagesCount);
 			}
 		}
 		
@@ -117,6 +140,8 @@ public class MapHelper {
 		map.setMapSize(orgZoom, width, height);
 		Log.d("SaveMap", "w " + width + " height " + height);
 		Log.d("SaveMap", "map " + orgZoom + " saved");
+		
+		return currentImagesCount;
 	}
 
 	/**

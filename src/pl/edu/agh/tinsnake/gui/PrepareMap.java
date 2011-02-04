@@ -52,6 +52,8 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	/** The current zoom level */
 	private int zoom = 2;
 
+	private ProgressDialog progressDialog;
+
 	/**
 	 * Called when the activity is first created.
 	 *
@@ -76,8 +78,9 @@ public class PrepareMap extends Activity implements OnTouchListener,
 	protected android.app.Dialog onCreateDialog(int id) {
 		switch (id) {
 		case PROGRESS_DIALOG:
-			ProgressDialog progressDialog = new ProgressDialog(this);
-			progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			progressDialog = new ProgressDialog(this);
+			progressDialog.setProgress(0);
+			progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 			progressDialog.setMessage("Loading...");
 			return progressDialog;
 		case FAILURE_DIALOG:
@@ -180,9 +183,17 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		final Handler handler = new Handler() {
 			@Override
 			public void handleMessage(android.os.Message msg) {
-				dismissDialog(PROGRESS_DIALOG);
-
-				if (!msg.getData().getBoolean("success")) {
+				
+				if (msg.getData().getBoolean("success")){
+					double total = msg.getData().getDouble("total"); 
+					if (total < 1) {
+						progressDialog.setProgress((int)(100 * total));
+					} else {
+						progressDialog.setProgress(100);
+						dismissDialog(PROGRESS_DIALOG);
+					}
+				} else {
+					dismissDialog(PROGRESS_DIALOG);
 					showDialog(FAILURE_DIALOG);
 				}
 			}
@@ -200,9 +211,10 @@ public class PrepareMap extends Activity implements OnTouchListener,
 				Bundle bundle = new Bundle();
 				message.setData(bundle);
 				try {
-					MapHelper.downloadMapImages(map);
+					MapHelper.downloadMapImages(map, handler);
 					MapHelper.saveMap(map);
 					bundle.putBoolean("success", true);
+					bundle.putDouble("total", 1);
 				} catch (Exception e) {
 					Log.e("SaveMap", e.getClass() + " " + e.getMessage());
 					bundle.putBoolean("success", false);
