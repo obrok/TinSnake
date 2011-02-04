@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/submenuLocation"
+        android:title="Maps...">
+
+        <menu>        
+			<item android:id="@+id/showNewMap"
+                android:title="New..." />
+            <item android:id="@+id/showLoadMap"
+                android:title="Load map" />
+            <item android:id="@+id/showDeleteMaps"
+                android:title="Delete maps" />
+        </menu>
+
+    </item>
+    <item android:id="@+id/submenuLocation"
         android:title="Location...">
 
         <menu>        

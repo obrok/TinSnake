@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -32,7 +33,6 @@ import android.widget.Toast;
  */
 public class ShowMap extends Activity implements OnClickListener, LocationListener {
 
-	/** The Constant PROGRESS_DIALOG. */
 	private static final int PROGRESS_DIALOG = 1;
 	protected static final int FAILURE_DIALOG = 0;
 	private static final int LOCATION_SETTINGS_REQUEST_CODE = 0;
@@ -44,6 +44,7 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 
 	private Map map;
 	private LocationManager locationManager;
+	private AlertDialog deleteAlert;
 
 	/**
 	 * Called when the activity is first created.
@@ -141,12 +142,39 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 			
 			startActivityForResult(intent, LOCATION_SETTINGS_REQUEST_CODE);
 			return true;
+		case R.id.showDeleteMaps:
+			showDeleteMapsDialog();
+			return true;
 
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 	
+	private void showDeleteMapsDialog() {
+		final String[] items = MapHelper.getMapNames();
+		
+		if (items.length == 0){
+			Toast.makeText(getApplicationContext(), "No maps :(", Toast.LENGTH_SHORT).show();
+			return;
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Pick a map to delete");
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+		    public void onClick(DialogInterface dialog, int item) {
+		        String chosen = items[item].toString();
+		        MapHelper.deleteMap(chosen);
+		        deleteAlert.dismiss();
+		    }
+		});
+		deleteAlert = builder.create();
+		deleteAlert.show();
+		
+		return;
+		
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);

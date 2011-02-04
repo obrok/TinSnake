@@ -1,13 +1,11 @@
 package pl.edu.agh.tinsnake.gui;
 
-import java.io.File;
-
+import pl.edu.agh.tinsnake.MapHelper;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
@@ -40,11 +38,7 @@ public class TinSnakeMenu extends Activity implements OnClickListener {
 			intent = new Intent(v.getContext(), PrepareMap.class);
 		} else if (v.getId() == R.id.showButton) {
 			
-	        File dir = new File(Environment.getExternalStorageDirectory()
-					.getAbsolutePath()
-					+ File.separator + "mapsfolder");
-			
-			final String[] items = dir.list();
+	        final String[] items = MapHelper.getMapNames();
 			
 			if (items.length == 0){
 				Toast.makeText(getApplicationContext(), "No maps :(", Toast.LENGTH_SHORT).show();
