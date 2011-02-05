@@ -6,6 +6,7 @@ import pl.edu.agh.tinsnake.MapHelper;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -69,6 +70,8 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		this.findViewById(R.id.map).setOnTouchListener(this);
 
 		refreshMap();
+		
+		setResult(1);
 	}
 
 	/* (non-Javadoc)
@@ -200,6 +203,8 @@ public class PrepareMap extends Activity implements OnTouchListener,
 		};
 
 		showDialog(PROGRESS_DIALOG);
+		
+		final Context c = this;
 
 		new Thread(new Runnable() {
 			@Override
@@ -213,6 +218,10 @@ public class PrepareMap extends Activity implements OnTouchListener,
 				try {
 					MapHelper.downloadMapImages(map, handler);
 					MapHelper.saveMap(map);
+					
+					MapHelper.setLastMap(map.getName(), c);
+					setResult(0);
+					
 					bundle.putBoolean("success", true);
 					bundle.putDouble("total", 1);
 				} catch (Exception e) {

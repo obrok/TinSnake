@@ -36,6 +36,7 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 	private static final int PROGRESS_DIALOG = 1;
 	protected static final int FAILURE_DIALOG = 0;
 	private static final int LOCATION_SETTINGS_REQUEST_CODE = 0;
+	private static final int PREPARE_MAP_REQUEST_CODE = 1;
 
 	private SharedPreferences locationSettings;
 	
@@ -59,12 +60,26 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 			setContentView(R.layout.show);
 			this.findViewById(R.id.showZoomIn).setOnClickListener(this);
 			this.findViewById(R.id.showZoomOut).setOnClickListener(this);
-			initializeMapView();
+			
 			locationSettings = getSharedPreferences(LocationSettings.SETTINGS_NAME, 0);
+			String lastMap = locationSettings.getString("lastMap", "-");
+			
+			if (MapHelper.mapExists(lastMap)) {
+				initializeMapView(lastMap);
+			}
+			else {
+				showPrepareMap();
+			}
+			
 			initializeLocationListener();
 		} catch (Exception e) {
 			Log.e("ShowMap", e.getClass() + " " + e.getMessage());
 		}
+	}
+
+	private void showPrepareMap() {
+		Intent intent = new Intent(this, PrepareMap.class);
+		startActivityForResult(intent, PREPARE_MAP_REQUEST_CODE);
 	}
 
 	/**
@@ -79,11 +94,8 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 	 * Initializes map view (loads the appropriate map using the map name stored
 	 * in the intent).
 	 */
-	private void initializeMapView() {
+	private void initializeMapView(String mapName) {
 		try {
-			Intent intent = getIntent();
-			String mapName = intent.getStringExtra("mapName");
-
 			webView = ((MapWebView) this.findViewById(R.id.showMap));
 			
 			map = MapHelper.loadMap(mapName);
@@ -131,6 +143,9 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 				return false;
 			} 
 			return true;
+		case R.id.showNewMap:
+			showPrepareMap();
+			return true;
 		case R.id.showNextZoom:
 			downloadNextZoomLevel();
 			return true;
@@ -145,12 +160,42 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 		case R.id.showDeleteMaps:
 			showDeleteMapsDialog();
 			return true;
+			
+		case R.id.showLoadMap: 
+				
+			showLoadMapDialog();
+			
+			return true;
 
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 	
+	private void showLoadMapDialog() {
+        final String[] items = MapHelper.getMapNames();
+		
+		if (items.length == 0){
+			Toast.makeText(getApplicationContext(), "No maps :(", Toast.LENGTH_SHORT).show();
+			return;
+		}
+
+		final Context c = this;
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Pick a map");
+		builder.setItems(items, new DialogInterface.OnClickListener() {
+		    public void onClick(DialogInterface dialog, int item) {
+		        //Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
+		        String chosen = items[item].toString();
+		        initializeMapView(chosen);
+		        MapHelper.setLastMap(chosen, c);
+		    }
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
+	}
+
 	private void showDeleteMapsDialog() {
 		final String[] items = MapHelper.getMapNames();
 		
@@ -185,7 +230,11 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 				refreshLocationSettings();
 			}
 			break;
-
+		case PREPARE_MAP_REQUEST_CODE:
+			if (resultCode == 0) {
+				initializeMapView(locationSettings.getString("lastMap", "-"));
+			}
+			break;
 		default:
 			break;
 		}

@@ -29,8 +29,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import pl.edu.agh.tinsnake.gui.LocationSettings;
 import pl.edu.agh.tinsnake.util.CloseableUser;
 import pl.edu.agh.tinsnake.util.StreamUtil;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -488,5 +491,19 @@ public class MapHelper {
 			}
 		}
 		path.delete();
+	}
+
+	public static boolean mapExists(String mapName) {
+		File file = new File(getFolderPath(mapName));
+		return file.exists();
+	}
+
+	public static void setLastMap(String name, Context c) {
+		SharedPreferences settings = c.getSharedPreferences(LocationSettings.SETTINGS_NAME, 0);
+		SharedPreferences.Editor editor = settings.edit();
+		editor.putString("lastMap", name);
+
+		editor.commit();
+		
 	}
 }
