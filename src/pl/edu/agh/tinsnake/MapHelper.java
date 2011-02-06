@@ -125,9 +125,10 @@ public class MapHelper {
 		}
 	}
 
-	public static void downloadNextZoomLevel(Map map)
+	public static void downloadNextZoomLevel(Map map, Handler handler)
 			throws FileNotFoundException, IOException {
-		downloadZoomLevel(map, map.getMaxZoom() + 1, null, 0, 0);
+		int imagesCount = (int) Math.pow(Math.pow(2, map.getMaxZoom()), 2);
+		downloadZoomLevel(map, map.getMaxZoom() + 1, handler, imagesCount, 0);
 	}
 
 	private static int downloadZoomLevel(Map map, int orgZoom, Handler handler,
@@ -145,17 +146,20 @@ public class MapHelper {
 				width += bitmap.getWidth();
 				height += bitmap.getHeight();
 
-				Message msg = handler.obtainMessage();
+				if (handler != null) {
+					Message msg = handler.obtainMessage();
+					currentImagesCount++;
 
-				currentImagesCount++;
+					Bundle b = new Bundle();
+					b.putDouble("total", (double) currentImagesCount
+							/ (double) imagesCount);
+					b.putBoolean("success", true);
+					msg.setData(b);
+					handler.sendMessage(msg);
+					Log.d("DOWNLOADED", "COUNT: " + currentImagesCount);
 
-				Bundle b = new Bundle();
-				b.putDouble("total", (double) currentImagesCount
-						/ (double) imagesCount);
-				b.putBoolean("success", true);
-				msg.setData(b);
-				handler.sendMessage(msg);
-				Log.d("DOWNLOADED", "COUNT: " + currentImagesCount);
+				}
+
 			}
 		}
 
@@ -499,11 +503,27 @@ public class MapHelper {
 	}
 
 	public static void setLastMap(String name, Context c) {
-		SharedPreferences settings = c.getSharedPreferences(LocationSettings.SETTINGS_NAME, 0);
+		SharedPreferences settings = c.getSharedPreferences(
+				LocationSettings.SETTINGS_NAME, 0);
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putString("lastMap", name);
 
 		editor.commit();
+
+	}
+
+	public static void saveExport(final Bitmap export, Map map) throws FileNotFoundException, IOException {
+		final File file = new File(getFolderPath(map.getName()) + File.separator + "export.jpg");
+
+		StreamUtil.safelyAcccess(new FileOutputStream(file),
+				new CloseableUser() {
+					@Override
+					public void performAction(Closeable stream)
+							throws IOException {
+						export.compress(Bitmap.CompressFormat.JPEG, 90,
+								(OutputStream) stream);
+					}
+				});
 		
 	}
 }

@@ -1,8 +1,11 @@
 package pl.edu.agh.tinsnake.gui;
 
+import pl.edu.agh.tinsnake.Map;
+import pl.edu.agh.tinsnake.MapHelper;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.CheckBox;
@@ -13,6 +16,8 @@ import android.widget.Toast;
 
 public class LocationSettings extends Activity implements OnClickListener {
 	
+	private Map map;
+
 	/**
 	 * Called when the activity is first created.
 	 *
@@ -22,8 +27,13 @@ public class LocationSettings extends Activity implements OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		map = (Map) getIntent().getExtras().getSerializable("map");
+		
 		setContentView(R.layout.location_settings);
 		findViewById(R.id.settingsSave).setOnClickListener(this);
+		findViewById(R.id.settingsClearLog).setOnClickListener(this);
+		findViewById(R.id.settingsSaveLog).setOnClickListener(this);
+		findViewById(R.id.settingsLoadLog).setOnClickListener(this);
 		
 		trackingCheckBox = (CheckBox)findViewById(R.id.trackingCheckBox);
 		gpsRadioButton = (RadioButton)findViewById(R.id.gpsRadioButton);
@@ -100,6 +110,17 @@ public class LocationSettings extends Activity implements OnClickListener {
 			}
 			
 			break;
+			
+		case R.id.settingsClearLog:
+			map.clearLocationHistory();
+			try {
+				MapHelper.saveMap(map);
+			} catch (Exception e) {
+				Log.e("CLEAR LOCATION HISTORY", e.getClass().getCanonicalName() + " "
+						+ e.getMessage());
+				return;
+			} 
+			return;
 
 		default:
 			break;

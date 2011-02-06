@@ -63,10 +63,34 @@
 			android:layout_height="wrap_content" 
 			android:layout_width="fill_parent" />
 	</LinearLayout>
-
+	
 	<Button 
 		android:layout_height="wrap_content" 
 		android:id="@+id/settingsSave"
 		android:layout_width="wrap_content" 
 		android:text="Save settings" />
+	
+	<LinearLayout
+		android:id="@+id/LinearLayout03"
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			
+		<Button 
+			android:layout_height="wrap_content" 
+			android:id="@+id/settingsLoadLog"
+			android:layout_width="wrap_content" 
+			android:text="Load log..." />
+		
+		<Button 
+			android:layout_height="wrap_content" 
+			android:id="@+id/settingsSaveLog"
+			android:layout_width="wrap_content" 
+			android:text="Save log..." />
+		
+		<Button 
+			android:layout_height="wrap_content" 
+			android:id="@+id/settingsClearLog"
+			android:layout_width="wrap_content" 
+			android:text="Clear log" />
+	</LinearLayout>
 </LinearLayout>

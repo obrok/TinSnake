@@ -3,6 +3,7 @@ package pl.edu.agh.tinsnake.gui;
 import pl.edu.agh.tinsnake.GPSPoint;
 import pl.edu.agh.tinsnake.Map;
 import pl.edu.agh.tinsnake.MapHelper;
+import pl.edu.agh.tinsnake.Map.MapSize;
 import pl.edu.agh.tinsnake.util.MapWebView;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -11,6 +12,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -46,6 +49,7 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 	private Map map;
 	private LocationManager locationManager;
 	private AlertDialog deleteAlert;
+	private ProgressDialog progressDialog;
 
 	/**
 	 * Called when the activity is first created.
@@ -133,16 +137,7 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 
 		// Handle item selection
 		switch (item.getItemId()) {
-		case R.id.showClear:
-			map.clearLocationHistory();
-			try {
-				MapHelper.saveMap(map);
-			} catch (Exception e) {
-				Log.e("CLEAR LOCATION HISTORY", e.getClass().getCanonicalName() + " "
-						+ e.getMessage());
-				return false;
-			} 
-			return true;
+
 		case R.id.showNewMap:
 			showPrepareMap();
 			return true;
@@ -152,19 +147,19 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 		case R.id.showInfo:
 			downloadMapInfo();
 			return true;
-		case R.id.showSettings:
+		case R.id.showLocation:
 			Intent intent = new Intent(getApplicationContext(), LocationSettings.class);
-			
+			intent.putExtra("map", map);
 			startActivityForResult(intent, LOCATION_SETTINGS_REQUEST_CODE);
 			return true;
 		case R.id.showDeleteMaps:
 			showDeleteMapsDialog();
 			return true;
-			
 		case R.id.showLoadMap: 
-				
 			showLoadMapDialog();
-			
+			return true;
+		case R.id.showExport:
+			exportViewToImage();
 			return true;
 
 		default:
@@ -172,6 +167,17 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 		}
 	}
 	
+	private void exportViewToImage() {
+		try {
+			MapSize size = map.getMapSize(webView.getMapZoom());
+			Bitmap b = Bitmap.createBitmap(size.getWidth(), size.getHeight(), Bitmap.Config.ARGB_8888);
+			Canvas c = new Canvas(b);
+			webView.draw(c);
+			MapHelper.saveExport(b, map);
+		} catch (Exception e) {
+		}
+	}
+
 	private void showLoadMapDialog() {
         final String[] items = MapHelper.getMapNames();
 		
@@ -229,6 +235,7 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 			if (resultCode == 0) {
 				refreshLocationSettings();
 			}
+			initializeMapView(map.getName());
 			break;
 		case PREPARE_MAP_REQUEST_CODE:
 			if (resultCode == 0) {
@@ -261,9 +268,17 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 		final Handler handler = new Handler() {
 			@Override
 			public void handleMessage(android.os.Message msg) {
-				dismissDialog(PROGRESS_DIALOG);
-
-				if (!msg.getData().getBoolean("success")) {
+				
+				if (msg.getData().getBoolean("success")){
+					double total = msg.getData().getDouble("total"); 
+					if (total < 1) {
+						progressDialog.setProgress((int)(100 * total));
+					} else {
+						progressDialog.setProgress(100);
+						dismissDialog(PROGRESS_DIALOG);
+					}
+				} else {
+					dismissDialog(PROGRESS_DIALOG);
 					showDialog(FAILURE_DIALOG);
 				}
 			}
@@ -278,7 +293,7 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 				Bundle bundle = new Bundle();
 				message.setData(bundle);
 				try {
-					MapHelper.downloadNextZoomLevel(map);
+					MapHelper.downloadNextZoomLevel(map, handler);
 					MapHelper.saveMap(map);
 					bundle.putBoolean("success", true);
 				} catch (Exception e) {
@@ -299,8 +314,9 @@ public class ShowMap extends Activity implements OnClickListener, LocationListen
 	protected android.app.Dialog onCreateDialog(int id) {
 		switch (id) {
 		case PROGRESS_DIALOG:
-			ProgressDialog progressDialog = new ProgressDialog(this);
-			progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			progressDialog = new ProgressDialog(this);
+			progressDialog.setProgress(0);
+			progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 			progressDialog.setMessage("Loading...");
 			return progressDialog;
 		case FAILURE_DIALOG:

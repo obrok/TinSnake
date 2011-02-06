@@ -1,9 +1,9 @@
 package pl.edu.agh.tinsnake.util;
 
 import pl.edu.agh.tinsnake.GPSPoint;
-import pl.edu.agh.tinsnake.MapPoint;
 import pl.edu.agh.tinsnake.Map;
 import pl.edu.agh.tinsnake.MapHelper;
+import pl.edu.agh.tinsnake.MapPoint;
 import pl.edu.agh.tinsnake.Map.MapSize;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -226,5 +226,9 @@ public class MapWebView extends WebView {
 			Log.e("SaveLocation", e.getClass() + " " + e.getMessage());
 		}
 		refreshMap();
+	}
+
+	public int getMapZoom() {
+		return mapZoom;
 	}
 }
